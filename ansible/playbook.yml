@@ -1,40 +1,48 @@
 ---
-- name: Configure Fedora workstation
+- name: Configure Arch Linux workstation
   hosts: local
   become: true
 
+  vars_files: []
+    # - vars/secrets.yml  # ansible-vault encrypted secrets (SSH keys, tokens, etc.)
 
   tasks:
 
-    - name: Enable and start Bluetooth service
-      systemd:
-        name: bluetooth
-        enabled: true
-        state: started
-
-    - name: Install arandr display manager
-      dnf:
-        name: arandr
-        state: present
-
-    - name: Install Bluetooth packages
-      dnf:
+    # ── Base packages ────────────────────────────────────────────────────────
+    - name: Install base packages
+      community.general.pacman:
         name:
-          - bluez
-          - bluez-tools
-          - blueman
+          - git
+          - stow
+          - base-devel
         state: present
+        update_cache: true
 
-    - name: Install Brave browser
-      shell: curl -fsS https://dl.brave.com/install.sh | sh
-      args:
-        creates: /usr/bin/brave-browser
+    # ── Desktop (Wayland / Hyprland) ─────────────────────────────────────────
+    # Add Hyprland, Waybar, wofi, hyprpaper, swaylock, etc. here
 
-    - name: Install Neovim
-      dnf:
-        name: neovim
-        state: present
+    # ── Terminal & shell ─────────────────────────────────────────────────────
+    # Add terminal emulator, zsh, starship, etc. here
 
-    - name: Swap Caps Lock and Escape keys
-      command: localectl set-x11-keymap us "" "" caps:swapescape
-      changed_when: false
+    # ── Development tools ────────────────────────────────────────────────────
+    # Add neovim, git tools, language toolchains, etc. here
+
+    # ── Applications ─────────────────────────────────────────────────────────
+    # Add Brave, Bitwarden, file manager, etc. here
+
+    # ── System services ──────────────────────────────────────────────────────
+    # Add systemd service enables here
+
+    # ── Dotfiles ─────────────────────────────────────────────────────────────
+    - name: Stow dotfiles
+      become: false
+      command:
+        cmd: stow {{ item }}
+        chdir: "{{ ansible_env.HOME }}/linux-setup/dotfiles"
+      loop: []
+        # - hyprland
+        # - waybar
+        # - terminal
+        # - nvim
+        # - git
+      when: false  # remove this line once packages are populated

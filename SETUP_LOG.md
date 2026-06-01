@@ -1,76 +1,145 @@
-# PC Setup Log
+# Arch Linux Setup Log
 
-This document is split into two parts:
-1. **Setup Log** - Record of manual steps performed during setup (for future automation)
-2. **Post-Installation Guide** - Steps to complete after running the Ansible playbook
+Running log of manual steps performed during the Arch + Wayland (Hyprland) setup.
+Entries are removed once they have been automated into Ansible or committed as dotfiles.
 
----
-
-# Part 1: Setup Log
-
-Record of manual configuration steps performed. These should be automated in future iterations.
-
-## Installed Software
-
-| Software | Installation Method | Status |
-|----------|---------------------|--------|
-| Bluetooth (bluez, blueman) | Ansible | Automated |
-| arandr | Ansible | Automated |
-| Brave Browser | Ansible (curl script) | Automated |
-
-## Manual Steps Performed
-
-- [ ] Connected Bluetooth keyboard via Blueman
-- [ ] Configured external monitors via arandr
-- [ ] Set up Brave sync chain
+**Workflow:**
+1. Log steps here as you go (commands, decisions, config changes)
+2. Organize by category so the Ansible/dotfile conversion is clean
+3. Delete entries once automated
 
 ---
 
-# Part 2: Post-Installation Guide
+## Phase 1 — Foundation
 
-Complete these steps after running `./bootstrap.sh` or the Ansible playbook.
+### Bootable USB
+<!-- Log: ISO version used, dd/Etcher command, verification steps -->
 
-## 1. Connect Bluetooth Devices
+### Base Installation
+<!-- Log: partition layout, filesystems, pacstrap packages, bootloader choice -->
 
-1. Launch Blueman: `blueman-manager`
-2. Click "Search" to scan for devices
-3. Put device in pairing mode
-4. Right-click device → "Pair" → "Trust" → "Connect"
+### User & Hostname
+<!-- Log: hostname, username, locale, timezone -->
 
-### Enable FastConnectable (optional)
+### Packages (pacman)
+| Package | Purpose | Status |
+|---------|---------|--------|
+|  |  | manual |
 
-Edit `/etc/bluetooth/main.conf`:
-```ini
-[General]
-FastConnectable = true
-```
+### AUR Packages
+| Package | AUR Helper | Purpose | Status |
+|---------|-----------|---------|--------|
+|  |  |  | manual |
 
-Restart: `sudo systemctl restart bluetooth`
-
----
-
-## 2. Configure External Monitors
-
-1. Launch: `arandr`
-2. Drag monitors to set position
-3. Set resolution for each display
-4. Apply and save layout to `~/.screenlayout/`
-5. Add to i3 config for persistence:
-   ```
-   exec --no-startup-id ~/.screenlayout/monitor-layout.sh
-   ```
+### Services Enabled
+| Service | Command | Status |
+|---------|---------|--------|
+|  |  | manual |
 
 ---
 
-## 3. Setup Brave Browser Sync
+## Phase 2 — Desktop (Wayland / Hyprland)
 
-1. Open Brave
-2. Go to Settings → Sync
-3. Enter sync chain code from existing device
+### Hyprland Config
+<!-- Log: key config decisions, monitors, keybindings, window rules -->
+
+### Waybar
+<!-- Log: modules enabled, CSS changes -->
+
+### Application Launcher (wofi / rofi-wayland)
+<!-- Log: choice made and why, config -->
+
+### Fonts
+<!-- Log: fonts installed, nerd font variant -->
+
+### Desktop Background
+<!-- Log: tool used (hyprpaper / swaybg), images location -->
+
+### Display / Monitor Layout
+<!-- Log: monitor names (wlr-randr output), hyprland monitor config lines -->
+
+### Screen Lock
+<!-- Log: tool (swaylock / hyprlock), config -->
 
 ---
 
-## 4. Configure Fn Hotkeys
+## Phase 3 — Terminal & Shell
 
-<!-- TODO: Document Fn hotkey configuration -->
+### Terminal Emulator
+<!-- Log: choice (kitty / alacritty / foot), config changes -->
 
+### Zsh & Plugins
+<!-- Log: plugin manager, plugins installed, .zshrc customizations -->
+
+### Prompt (starship / p10k / etc.)
+<!-- Log: theme/config used -->
+
+---
+
+## Phase 4 — Development Tools
+
+### Neovim
+<!-- Log: config approach (kickstart / own), plugins -->
+
+### Git
+<!-- Log: global config, credential helper, SSH key setup -->
+
+### Claude Code
+<!-- Log: install method, config -->
+
+### Language Toolchains
+| Language | Tool | Install Method | Status |
+|----------|------|---------------|--------|
+| Python | pyenv / uv | | manual |
+| Java | sdkman / pacman | | manual |
+
+---
+
+## Phase 5 — Applications
+
+### Brave Browser
+<!-- Log: install method, sync setup -->
+
+### Bitwarden
+<!-- Log: install method (flatpak / AUR), setup -->
+
+### File Manager
+<!-- Log: choice (thunar / nemo / yazi), config -->
+
+---
+
+## Phase 6 — System Configuration
+
+### Audio (Pipewire)
+<!-- Log: packages, wireplumber config, volume keybindings -->
+
+### Bluetooth
+<!-- Log: packages, fastconnectable config -->
+
+### Input Devices
+<!-- Log: keyboard layout, caps/escape swap, touchpad config -->
+
+### Fn Keys / Media Controls
+<!-- Log: keybinding setup, wl-clipboard, brightnessctl, etc. -->
+
+### Networking
+<!-- Log: NetworkManager or iwd setup -->
+
+---
+
+## Phase 7 — Recovery & Backup
+
+### File Transfer from Old System
+<!-- Log: what was transferred, method (rsync / USB) -->
+
+### Backup System
+<!-- Log: tool (restic / borgbackup), remote target, schedule -->
+
+---
+
+## Decisions & Notes
+
+| Date | Decision | Reason |
+|------|----------|--------|
+| 2026-06-01 | Switch from Fedora/i3 to Arch/Wayland | Full control, Hyprland ecosystem, fresh start |
+| 2026-06-01 | Log-first workflow | Document manual steps before automating into Ansible |

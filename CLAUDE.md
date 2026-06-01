@@ -4,15 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a personal system recovery/setup repository for a Fedora i3 environment. It enables fast disaster recovery and new PC setup by combining:
+This is a personal system recovery/setup repository for an **Arch Linux + Wayland** environment. It enables fast disaster recovery and new PC setup by combining:
 - **Ansible**: Package installation and system configuration
 - **GNU Stow**: Dotfile management via symlinks
 - **Ansible Vault**: Secure storage for sensitive config (SSH keys, git credentials, etc.)
 
-The goal is to go from a fresh install to a fully configured i3 desktop in minutes instead of days.
+The goal is to go from a fresh Arch install to a fully configured Wayland desktop (Hyprland or Sway) in minutes instead of days.
 
-### Supported Operating Systems
-The bootstrap script is configured for Fedora (DNF) by default. Users can manually edit the script to change the package manager for other distributions.
+### Target Environment
+- **OS**: Arch Linux (pacman)
+- **Display protocol**: Wayland
+- **Compositor**: Hyprland or Sway (i3-like tiling)
+
+### Setup Workflow
+New configuration is developed in two phases:
+1. **Log phase**: Document all manual setup steps in `SETUP_LOG.md` as you go (commands, decisions, config changes). Organize entries by category: packages, dotfiles, services.
+2. **Automation phase**: Convert the log into Ansible tasks and dotfiles in this repo, then commit and clean up the log entries.
 
 ## Setup Commands
 
@@ -37,9 +44,10 @@ ansible-playbook -i inventory.ini playbook.yml --ask-become-pass --ask-vault-pas
 - **`ansible/`**: Ansible playbooks for package installation and system configuration
   - Should contain `inventory.ini` and `playbook.yml`
   - Use Ansible Vault for encrypted secrets (SSH keys, git credentials, API tokens)
-- **`dotfiles/`**: Configuration files organized by application (i3, terminal, bar, git, etc.)
+- **`dotfiles/`**: Configuration files organized by application (hyprland/sway, terminal, waybar, git, etc.)
   - Each subdirectory represents a "stow package" that gets symlinked to `$HOME`
-  - Example: `dotfiles/i3/.config/i3/config` → `~/.config/i3/config`
+  - Example: `dotfiles/hyprland/.config/hypr/hyprland.conf` → `~/.config/hypr/hyprland.conf`
+- **`SETUP_LOG.md`**: Running log of manual setup steps (commands, decisions, config changes) captured during active setup, organized by category (packages, dotfiles, services). Entries are removed once automated into Ansible/dotfiles.
 
 ## Workflow
 
@@ -54,10 +62,10 @@ ansible-playbook -i inventory.ini playbook.yml --ask-become-pass --ask-vault-pas
 - Playbook will prompt for vault password during execution
 
 ### Testing
-- Use VM or container to test bootstrap script on clean Fedora install
-- Verify all packages install correctly
+- Use VM or container to test bootstrap script on a clean Arch install
+- Verify all packages install correctly via pacman/AUR
 - Verify dotfiles are symlinked properly
-- Verify i3, bar, terminal configs work as expected
+- Verify compositor (Hyprland/Sway), waybar, and terminal configs work as expected
 
 ### Creating GitHub Tickets
 When asked to create tickets or issues in the GitHub project:
