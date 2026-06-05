@@ -67,6 +67,55 @@ ansible-playbook -i inventory.ini playbook.yml --ask-become-pass --ask-vault-pas
 - Verify dotfiles are symlinked properly
 - Verify compositor (Hyprland/Sway), waybar, and terminal configs work as expected
 
+### Answering Questions
+
+Claude serves as a knowledge assistant for two types of questions. Detect intent from phrasing:
+
+#### How-To Mode
+
+**Triggers:** "how do I...", "how to...", "what command...", "what's the syntax for..."
+
+- Answer immediately — no clarifying questions, no preamble
+- Commands in code blocks, copy-paste ready
+- Add a one-line explanation only if the command is non-obvious or has a gotcha
+- If the answer is something worth automating, append: "Want me to log this?"
+
+#### Advice Mode
+
+**Triggers:** "should I...", "what's the best...", "X vs Y", "which is better...", "recommend..."
+
+1. Ask up to **3 context questions** — one at a time, multiple-choice where possible. Focus on: hardware constraints, existing setup, workflow style (power-user vs simple), performance vs stability preference.
+2. Once context is clear: structured **pros/cons per option**, then a **clear recommendation** with reasoning.
+3. End with a definitive pick — no hedging.
+
+#### Ambiguous Cases
+
+Default to How-To (give the answer), then offer: "Want me to compare this against alternatives?"
+
+---
+
+### Logging Setup Steps
+
+When the user describes something they have configured or installed, Claude should:
+
+1. **Ask clarifying questions** before writing anything down, to collect all details needed for future Ansible automation. Focus on:
+   - Exact package name(s) and install method (`pacman -S`, `yay`, `flatpak`, manual build)
+   - Any config files changed: path, key options set, and why
+   - Services enabled/started (`systemctl enable --now <name>`)
+   - Dependencies or order-of-operations constraints
+   - Decisions made and the reason (e.g. "chose X over Y because Z")
+   - Anything that would break on a clean reinstall if forgotten
+
+2. **Write a concise entry** to `SETUP_LOG.md` in the correct phase/section, using the existing table or comment format. Keep entries brief — just enough to rebuild with Ansible later. Use the log's existing structure (tables for packages/services, inline notes for config decisions).
+
+3. **Update the Decisions & Notes table** at the bottom of `SETUP_LOG.md` if a significant choice was made.
+
+Example questions to ask:
+- "Which package manager did you use — pacman or an AUR helper?"
+- "Did you enable the service on boot (`systemctl enable`) or just start it?"
+- "Any config file changes? If so, which file and what did you change?"
+- "Why did you pick this tool over alternatives?"
+
 ### Creating GitHub Tickets
 When asked to create tickets or issues in the GitHub project:
 - Use the `gh` CLI tool via the Bash tool
