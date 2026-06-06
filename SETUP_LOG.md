@@ -54,7 +54,26 @@ Entries are removed once they have been automated into Ansible or committed as d
 <!-- Log: fonts installed, nerd font variant -->
 
 ### Desktop Background
-<!-- Log: tool used (hyprpaper / swaybg), images location -->
+- **Tool:** `hyprpaper` (already installed; pacman package `hyprpaper`).
+- **Config:** `hyprland/.config/hypr/hyprpaper.conf` (dotfile, symlinked via the folded
+  `~/.config/hypr -> dotfiles/hyprland/.config/hypr` stow link). Uses the block syntax:
+  ```
+  wallpaper {
+      monitor =
+      path = ~/Pictures/Wallpapers/dune_wallpaper.png
+      fit_mode = cover
+  }
+  ```
+  Empty `monitor =` = wildcard, applies to all outputs. `fit_mode = cover` scales/crops to fill.
+- **Autostart:** added `exec-once = hyprpaper` to `hyprland/.config/hypr/hyprland.conf`.
+- **Images location:** `~/Pictures/Wallpapers/` (dune_wallpaper variants). These live outside the repo —
+  capture them in the dotfiles repo (or Ansible files) so the wallpaper survives a clean reinstall.
+- **Gotcha (cost real time):** the old inline syntax `wallpaper = , <path>` silently fails —
+  hyprpaper logs `Monitor <name> has no target: no wp will be created` and shows no wallpaper.
+  A space after the comma gets parsed into the path. Use the `wallpaper { ... }` block instead.
+- **Ansible steps:** (1) `pacman -S hyprpaper`, (2) deploy `hyprpaper.conf` + the `exec-once` line,
+  (3) place wallpaper images under `~/Pictures/Wallpapers/`.
+- **Reload after edits:** `killall hyprpaper && hyprpaper`.
 
 ### Display / Monitor Layout
 <!-- Log: monitor names (wlr-randr output), hyprland monitor config lines -->
@@ -112,6 +131,19 @@ Entries are removed once they have been automated into Ansible or committed as d
 
 ### Zsh & Plugins
 <!-- Log: plugin manager, plugins installed, .zshrc customizations -->
+
+#### Secrets handling
+- **Pattern:** API keys / secrets are kept OUT of the tracked `.zshrc`. `.zshrc` ends with
+  `[ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"`; real values live in
+  `~/.zsh_secrets` (mode `600`, gitignored).
+- **Template:** `zsh/.zsh_secrets.example` is committed so a fresh setup knows which vars to fill.
+- **Gitignore:** repo-root `.gitignore` excludes `.zsh_secrets`, `*_secrets`, `*.secret`, and
+  vault-password files.
+- **Currently held:** `ANTHROPIC_BASE_URL`, `ANTHROPIC_API_KEY` (axxes bridge).
+- **⚠️ TODO — migrate to Ansible Vault:** the `~/.zsh_secrets` file is currently machine-local only,
+  so it does NOT survive a clean reinstall. Encrypt it with `ansible-vault` and have the playbook
+  decrypt + deploy it to `~/.zsh_secrets` on setup, so secrets are part of the recoverable backup
+  (encrypted) instead of being manually recreated.
 
 ### Prompt (starship / p10k / etc.)
 <!-- Log: theme/config used -->
@@ -193,3 +225,5 @@ Entries are removed once they have been automated into Ansible or committed as d
 | 2026-06-06 | SDDM theme via sddm-astronaut-theme | Customized graphical login greeter; installed through upstream setup.sh (needs gum) |
 | 2026-06-06 | SDDM variant = black_hole + custom wallpaper | Picked black_hole variant; deliberately overwrote its stock `Backgrounds/black_hole.png` with a personal 3440x1440 image — must be backed up to repo and re-applied on reinstall |
 | 2026-06-06 | SDDM greeter laid out via X11 `Xsetup` + `xrandr` (not `wlr-randr`) | Greeter runs on X11; `wlr-randr` needs a wlroots Wayland compositor and can't drive it. `xrandr` is the right layer. Ultrawide set primary, laptop switched off to avoid a duplicated login dialog |
+| 2026-06-06 | Wallpaper via hyprpaper (dune_wallpaper.png, all monitors) | hyprpaper already installed; config kept as a dotfile, autostarted with `exec-once`. Wildcard monitor so both eDP-1 and DP-1 share one wallpaper |
+| 2026-06-06 | Zsh secrets in gitignored `~/.zsh_secrets` (sourced from `.zshrc`) | Keep API keys out of the tracked dotfiles. TODO: graduate to Ansible Vault so secrets are part of the encrypted, recoverable backup |

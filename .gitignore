@@ -1,0 +1,8 @@
+# Local secrets — never commit
+.zsh_secrets
+*_secrets
+*.secret
+
+# Ansible Vault password files
+.vault_pass
+*.vault-pass
