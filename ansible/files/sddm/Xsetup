@@ -1,0 +1,38 @@
+#!/bin/sh
+# Xsetup - run as root before the login dialog appears
+#
+# Deploy to: /usr/share/sddm/scripts/Xsetup  (mode 0755)
+# Requires:  xorg-xrandr  (provides `xrandr`)
+#
+# Single-screen layout for the SDDM greeter (X11). SDDM here runs on X11
+# (DisplayServer=x11), so xrandr is the correct tool — wlr-randr needs a
+# wlroots Wayland compositor and cannot drive the X11 greeter.
+#
+# Note: X11 connector names differ from Wayland's. The laptop panel is
+# "eDP" (Wayland: eDP-1) and the ultrawide is "DisplayPort-0" (Wayland:
+# DP-1). Names are detected dynamically to stay robust.
+#
+# When the ultrawide (the output advertising a native 3440x1440 mode) is
+# connected, show the greeter ONLY on it and switch the laptop off, so
+# the login dialog isn't duplicated/overlapped across both screens.
+# Otherwise fall back to the laptop on its own.
+
+# Connected laptop panel (eDP / eDP-1 / eDP-2 ...).
+LAPTOP=$(xrandr | awk '/^eDP.* connected/ { print $1; exit }')
+
+# Connected output advertising the ultrawide's native 3440x1440 mode.
+UW=$(xrandr | awk '
+    / connected/ { out=$1 }
+    /3440x1440/  { print out; exit }
+')
+
+if [ -n "$UW" ]; then
+    if [ -n "$LAPTOP" ]; then
+        xrandr --output "$UW" --mode 3440x1440 --pos 0x0 --primary \
+               --output "$LAPTOP" --off
+    else
+        xrandr --output "$UW" --mode 3440x1440 --pos 0x0 --primary
+    fi
+elif [ -n "$LAPTOP" ]; then
+    xrandr --output "$LAPTOP" --mode 1920x1080 --pos 0x0 --primary
+fi

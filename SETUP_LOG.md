@@ -25,6 +25,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | Package | Purpose | Status |
 |---------|---------|--------|
 | gum | Interactive shell prompts; required by the sddm-astronaut-theme setup.sh | manual |
+| xorg-xrandr | Provides `xrandr`, needed by the SDDM X11 `Xsetup` greeter layout script (see Display Manager). Easy to forget — script fails silently with `xrandr: command not found` if missing | manual |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -71,9 +72,36 @@ Entries are removed once they have been automated into Ansible or committed as d
   `/etc/sddm.conf.d/` (e.g. `Current=sddm-astronaut-theme`).
 - **Dependency:** requires `gum` (installed via pacman beforehand — see Packages table).
 - **TODO / not yet done:** `sddm.service` is NOT enabled yet (`systemctl enable sddm` still pending).
-- **Theme variant:** TBD — to be filled in once chosen from the setup.sh gum menu.
+- **Theme variant:** `black_hole` — set via `ConfigFile=Themes/black_hole.conf` in
+  `/usr/share/sddm/themes/sddm-astronaut-theme/metadata.desktop`.
+- **Custom background (intentional):** the stock `Backgrounds/black_hole.png` was replaced with a
+  personal ultrawide wallpaper (3440x1440). Full path:
+  `/usr/share/sddm/themes/sddm-astronaut-theme/Backgrounds/black_hole.png`.
+  This is referenced by `Background="Backgrounds/black_hole.png"` in `Themes/black_hole.conf`.
+  Must be re-copied after the theme is (re)installed, otherwise a reinstall reverts to the stock image.
 - **Ansible note:** prefer packaging the theme files into a dotfiles/role rather than re-running the
-  remote `curl | bash` script; capture the chosen variant and the final `/etc/sddm.conf.d` config.
+  remote `curl | bash` script. Capture: (1) variant = `black_hole` in `metadata.desktop`,
+  (2) the final `/etc/sddm.conf.d` config (`Current=sddm-astronaut-theme`), and
+  (3) the custom `black_hole.png` (store it in the repo and copy it over the theme's stock file).
+
+#### Multi-monitor greeter resolution (X11 Xsetup)
+- **Problem:** On the laptop + ultrawide setup, the SDDM greeter came up at a wrong/scaled
+  resolution. SDDM runs on **X11** (`DisplayServer=x11` in `/usr/lib/sddm/sddm.conf.d/default.conf`)
+  and doesn't know the monitor layout, so it fell back to a bad default.
+- **Fix:** a root `Xsetup` script that runs `xrandr` before the greeter draws. Deployed to
+  `/usr/share/sddm/scripts/Xsetup` (mode `755`). Script copy kept in repo at `ansible/files/sddm/Xsetup`.
+- **Behaviour:** detects the ultrawide as the connected output advertising a native `3440x1440`
+  mode, sets it primary at `3440x1440 +0+0`, and switches the laptop panel **off** so the login
+  dialog isn't duplicated across both screens. Falls back to the laptop alone when no ultrawide.
+- **X11 connector names differ from Wayland's** — laptop is `eDP` (Wayland `eDP-1`), ultrawide is
+  `DisplayPort-0` (Wayland `DP-1`). Script detects names dynamically rather than hardcoding, so this
+  mismatch doesn't bite. (Original attempt hardcoded `eDP-1`/`DP-1` and silently half-failed.)
+- **Hard dependency:** `xorg-xrandr` (see Packages table). Without it the script errors with
+  `xrandr: command not found` and the greeter stays broken.
+- **Note:** `wlr-randr` cannot be used here — it needs a wlroots Wayland compositor; the greeter is
+  X11, so `xrandr` is the correct tool for this layer.
+- **Ansible steps to reproduce:** (1) `pacman -S xorg-xrandr`, (2) deploy `ansible/files/sddm/Xsetup`
+  to `/usr/share/sddm/scripts/Xsetup` mode `0755`.
 
 ---
 
@@ -91,6 +119,11 @@ Entries are removed once they have been automated into Ansible or committed as d
 ---
 
 ## Phase 4 — Development Tools
+
+### Packages (pacman)
+| Package | Purpose | Status |
+|---------|---------|--------|
+| lazygit | Terminal UI for git | manual — `pacman -S lazygit`, no custom config (defaults) |
 
 ### Neovim
 <!-- Log: config approach (kickstart / own), plugins -->
@@ -158,3 +191,5 @@ Entries are removed once they have been automated into Ansible or committed as d
 | 2026-06-01 | Switch from Fedora/i3 to Arch/Wayland | Full control, Hyprland ecosystem, fresh start |
 | 2026-06-01 | Log-first workflow | Document manual steps before automating into Ansible |
 | 2026-06-06 | SDDM theme via sddm-astronaut-theme | Customized graphical login greeter; installed through upstream setup.sh (needs gum) |
+| 2026-06-06 | SDDM variant = black_hole + custom wallpaper | Picked black_hole variant; deliberately overwrote its stock `Backgrounds/black_hole.png` with a personal 3440x1440 image — must be backed up to repo and re-applied on reinstall |
+| 2026-06-06 | SDDM greeter laid out via X11 `Xsetup` + `xrandr` (not `wlr-randr`) | Greeter runs on X11; `wlr-randr` needs a wlroots Wayland compositor and can't drive it. `xrandr` is the right layer. Ultrawide set primary, laptop switched off to avoid a duplicated login dialog |
