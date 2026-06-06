@@ -24,7 +24,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 ### Packages (pacman)
 | Package | Purpose | Status |
 |---------|---------|--------|
-|  |  | manual |
+| gum | Interactive shell prompts; required by the sddm-astronaut-theme setup.sh | manual |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -60,6 +60,20 @@ Entries are removed once they have been automated into Ansible or committed as d
 
 ### Screen Lock
 <!-- Log: tool (swaylock / hyprlock), config -->
+
+### Display Manager (SDDM)
+- **Theme:** keyitdev/sddm-astronaut-theme, installed via its upstream setup script:
+  ```bash
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/keyitdev/sddm-astronaut-theme/master/setup.sh)"
+  ```
+- The script clones the theme into `/usr/share/sddm/themes/sddm-astronaut-theme`, pulls Qt6
+  dependencies (qt6-svg, qt6-virtualkeyboard, qt6-multimedia), and writes the active theme to
+  `/etc/sddm.conf.d/` (e.g. `Current=sddm-astronaut-theme`).
+- **Dependency:** requires `gum` (installed via pacman beforehand — see Packages table).
+- **TODO / not yet done:** `sddm.service` is NOT enabled yet (`systemctl enable sddm` still pending).
+- **Theme variant:** TBD — to be filled in once chosen from the setup.sh gum menu.
+- **Ansible note:** prefer packaging the theme files into a dotfiles/role rather than re-running the
+  remote `curl | bash` script; capture the chosen variant and the final `/etc/sddm.conf.d` config.
 
 ---
 
@@ -143,3 +157,4 @@ Entries are removed once they have been automated into Ansible or committed as d
 |------|----------|--------|
 | 2026-06-01 | Switch from Fedora/i3 to Arch/Wayland | Full control, Hyprland ecosystem, fresh start |
 | 2026-06-01 | Log-first workflow | Document manual steps before automating into Ansible |
+| 2026-06-06 | SDDM theme via sddm-astronaut-theme | Customized graphical login greeter; installed through upstream setup.sh (needs gum) |
