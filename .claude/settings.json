@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // \"\"' | { read -r f; echo \"$f\" | grep -q 'SETUP_LOG.md' && git -C \"$(git -C /Users/woutdeleu/Documents/Programming/dotfiles rev-parse --show-toplevel 2>/dev/null || echo /home/woutd/dotfiles)\" pull --rebase; } 2>/dev/null || true",
+            "statusMessage": "Pulling latest changes..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // \"\"' | { read -r f; echo \"$f\" | grep -q 'SETUP_LOG.md' && git -C \"$(git -C /Users/woutdeleu/Documents/Programming/dotfiles rev-parse --show-toplevel 2>/dev/null || echo /home/woutd/dotfiles)\" add SETUP_LOG.md && git commit -m \"Update SETUP_LOG.md\" && git push; } 2>/dev/null || true",
+            "statusMessage": "Pushing changes..."
+          }
+        ]
+      }
+    ]
+  }
+}
