@@ -75,11 +75,49 @@ Entries are removed once they have been automated into Ansible or committed as d
   (3) place wallpaper images under `~/Pictures/Wallpapers/`.
 - **Reload after edits:** `killall hyprpaper && hyprpaper`.
 
+### Cursor Theme
+- **Theme:** `Bibata-Modern-Amber` (rounded, amber variant), size `24`.
+- **Install:** AUR package `bibata-cursor-theme` (via AUR helper, e.g. `yay -S bibata-cursor-theme`).
+  Installs system-wide to `/usr/share/icons/Bibata-Modern-Amber/` — no manual move into
+  `~/.local/share/icons` needed when installed this way.
+- **Apply (GTK / Wayland apps):**
+  ```bash
+  gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Amber'
+  gsettings set org.gnome.desktop.interface cursor-size 24
+  ```
+- **Apply (Hyprland):** add to `hyprland/.config/hypr/hyprland.conf`:
+  ```
+  env = XCURSOR_THEME,Bibata-Modern-Amber
+  env = XCURSOR_SIZE,24
+  ```
+  Live-apply without relogin: `hyprctl setcursor Bibata-Modern-Amber 24`.
+- **Ansible steps:** (1) install AUR package `bibata-cursor-theme`, (2) deploy the two `env` lines in
+  `hyprland.conf`, (3) run the two `gsettings set` commands (or manage via a dconf/gsettings task).
+
 ### Display / Monitor Layout
 <!-- Log: monitor names (wlr-randr output), hyprland monitor config lines -->
 
 ### Screen Lock
 <!-- Log: tool (swaylock / hyprlock), config -->
+
+### Notifications (swaync)
+- **Tool:** `swaync` (SwayNotificationCenter) — `pacman -S swaync` (0.12.6).
+- **Autostart:** `exec-once = swaync` in `hyprland/.config/hypr/notifications.conf`
+  (sourced by `hyprland.conf`).
+- **Config (dotfiles, stow package `swaync/`):**
+  - `swaync/.config/swaync/config.json` — panel top-right; timeouts balanced
+    (normal 10s, low 5s, critical never auto-dismiss); widgets: title (+Clear All),
+    DND toggle, MPRIS, volume slider, backlight slider, notifications; grouping on.
+  - `swaync/.config/swaync/style.css` — themed to match Hyprland (navy `#0a1726`,
+    orange accent `#ff7800`, JetBrainsMono Nerd Font, rounded 10).
+  - `backlight` widget pinned to device `amdgpu_bl1` (from `/sys/class/backlight/`);
+    **machine-specific — re-detect on a different GPU/laptop.**
+- **Keybindings** (`keybindings.conf`): `SUPER+SHIFT+N` toggle panel
+  (`swaync-client -t -sw`), `SUPER+N` toggle DND (`swaync-client -d -sw`).
+  Note: these use literal **SUPER**, not `$mainMod` (which is ALT here).
+- **Reload after edits:** `swaync-client -rs` (reloads css + config, no restart).
+- **Ansible steps:** (1) `pacman -S swaync`, (2) deploy the `swaync/` dotfiles +
+  the `exec-once` line, (3) fix the `backlight.device` per machine.
 
 ### Display Manager (SDDM)
 - **Theme:** keyitdev/sddm-astronaut-theme, installed via its upstream setup script:
@@ -227,3 +265,5 @@ Entries are removed once they have been automated into Ansible or committed as d
 | 2026-06-06 | SDDM greeter laid out via X11 `Xsetup` + `xrandr` (not `wlr-randr`) | Greeter runs on X11; `wlr-randr` needs a wlroots Wayland compositor and can't drive it. `xrandr` is the right layer. Ultrawide set primary, laptop switched off to avoid a duplicated login dialog |
 | 2026-06-06 | Wallpaper via hyprpaper (dune_wallpaper.png, all monitors) | hyprpaper already installed; config kept as a dotfile, autostarted with `exec-once`. Wildcard monitor so both eDP-1 and DP-1 share one wallpaper |
 | 2026-06-06 | Zsh secrets in gitignored `~/.zsh_secrets` (sourced from `.zshrc`) | Keep API keys out of the tracked dotfiles. TODO: graduate to Ansible Vault so secrets are part of the encrypted, recoverable backup |
+| 2026-06-06 | Cursor theme = Bibata-Modern-Amber (size 24), via AUR `bibata-cursor-theme` | Consistent rounded cursor across GTK + Hyprland. AUR install lands in `/usr/share/icons` system-wide; applied via gsettings + Hyprland `env`/`hyprctl setcursor` |
+| 2026-06-06 | swaync themed config (navy/orange, top-right, balanced timeouts, DND + volume/backlight sliders) | Custom notification daemon styled to match the desktop; kept as stow package `swaync/`. Critical notifications never auto-dismiss; `backlight` device `amdgpu_bl1` is machine-specific |
