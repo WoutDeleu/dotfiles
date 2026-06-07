@@ -26,8 +26,6 @@ Entries are removed once they have been automated into Ansible or committed as d
 |---------|---------|--------|
 | gum | Interactive shell prompts; required by the sddm-astronaut-theme setup.sh | manual |
 | xorg-xrandr | Provides `xrandr`, needed by the SDDM X11 `Xsetup` greeter layout script (see Display Manager). Easy to forget — script fails silently with `xrandr: command not found` if missing | manual |
-| socat | Required by `dynamic-borders.sh` to read the Hyprland event socket (`socat -U`). Borders silently won't update without it | manual |
-| jq | Required by `dynamic-borders.sh` to parse Hyprland's JSON event/window data. Script won't work without it | manual |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
