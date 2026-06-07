@@ -44,12 +44,6 @@ Entries are removed once they have been automated into Ansible or committed as d
 ### Hyprland Config
 <!-- Log: key config decisions, monitors, keybindings, window rules -->
 
-**Dynamic borders** (`hyprland-dynamic-borders` by devadathanmb)
-- Script fetched from `https://raw.githubusercontent.com/devadathanmb/hyprland-dynamic-borders/main/dynamic-borders.sh`, `chmod a+x`, placed at `~/.local/bin/dynamic-borders.sh`
-- Autostarted via `exec-once = ~/.local/bin/dynamic-borders.sh` in `workspaces.conf` (sourced from `hyprland.conf`)
-- Runtime deps: **socat** + **jq** (see Packages) — socat listens on the Hyprland event socket, jq parses the JSON; borders recolor per active window
-- Ansible TODO: `get_url` the script → `~/.local/bin` (mode 0755), ensure socat + jq installed, ensure the `exec-once` line is present
-
 ### Waybar
 <!-- Log: modules enabled, CSS changes -->
 
@@ -273,4 +267,3 @@ Entries are removed once they have been automated into Ansible or committed as d
 | 2026-06-06 | Zsh secrets in gitignored `~/.zsh_secrets` (sourced from `.zshrc`) | Keep API keys out of the tracked dotfiles. TODO: graduate to Ansible Vault so secrets are part of the encrypted, recoverable backup |
 | 2026-06-06 | Cursor theme = Bibata-Modern-Amber (size 24), via AUR `bibata-cursor-theme` | Consistent rounded cursor across GTK + Hyprland. AUR install lands in `/usr/share/icons` system-wide; applied via gsettings + Hyprland `env`/`hyprctl setcursor` |
 | 2026-06-06 | swaync themed config (navy/orange, top-right, balanced timeouts, DND + volume/backlight sliders) | Custom notification daemon styled to match the desktop; kept as stow package `swaync/`. Critical notifications never auto-dismiss; `backlight` device `amdgpu_bl1` is machine-specific |
-| 2026-06-07 | Dynamic window borders via `hyprland-dynamic-borders` script (+ socat) | Active-window border coloring; standalone script in `~/.local/bin`, not a package. Pulled from upstream raw GitHub — pin/vendor the script in the repo so a reinstall doesn't depend on the URL staying live |
