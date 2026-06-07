@@ -26,6 +26,10 @@ Entries are removed once they have been automated into Ansible or committed as d
 |---------|---------|--------|
 | gum | Interactive shell prompts; required by the sddm-astronaut-theme setup.sh | manual |
 | xorg-xrandr | Provides `xrandr`, needed by the SDDM X11 `Xsetup` greeter layout script (see Display Manager). Easy to forget — script fails silently with `xrandr: command not found` if missing | manual |
+| grim | Wayland screenshot capture (see Screenshots) | manual |
+| slurp | Wayland region selector, piped into grim/satty (see Screenshots) | manual |
+| satty | Screenshot annotation editor (see Screenshots) | manual |
+| wl-clipboard | Provides `wl-copy`/`wl-paste`; clipboard output for screenshots | manual |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -60,14 +64,14 @@ Entries are removed once they have been automated into Ansible or committed as d
   ```
   wallpaper {
       monitor =
-      path = ~/Pictures/Wallpapers/dune_wallpaper.png
+      path = ~/.config/hypr/Wallpapers/dune_wallpaper.png
       fit_mode = cover
   }
   ```
   Empty `monitor =` = wildcard, applies to all outputs. `fit_mode = cover` scales/crops to fill.
 - **Autostart:** added `exec-once = hyprpaper` to `hyprland/.config/hypr/hyprland.conf`.
-- **Images location:** `~/Pictures/Wallpapers/` (dune_wallpaper variants). These live outside the repo —
-  capture them in the dotfiles repo (or Ansible files) so the wallpaper survives a clean reinstall.
+- **Images location:** `~/.config/hypr/Wallpapers/` (dune_wallpaper variants), now committed inside the
+  `hyprland/` stow package so the wallpaper survives a clean reinstall (moved out of `~/Pictures/Wallpapers/`).
 - **Gotcha (cost real time):** the old inline syntax `wallpaper = , <path>` silently fails —
   hyprpaper logs `Monitor <name> has no target: no wp will be created` and shows no wallpaper.
   A space after the comma gets parsed into the path. Use the `wallpaper { ... }` block instead.
@@ -96,6 +100,23 @@ Entries are removed once they have been automated into Ansible or committed as d
 
 ### Display / Monitor Layout
 <!-- Log: monitor names (wlr-randr output), hyprland monitor config lines -->
+
+### Screenshots
+- **Stack:** `grim` (capture) + `slurp` (region select) + `satty` (annotation editor).
+  Wayland-native; chosen over Flameshot (flaky on Hyprland, no recording) and the bundled
+  rofi `screenshot.sh` applet (X11-only: maim/xclip/xdotool — does not work on Wayland).
+- **Config (dotfile):** `hyprland/.config/hypr/screenshots.conf`, sourced from `hyprland.conf`.
+  Clipboard-only by design — nothing is written to disk.
+  - `Print` → region select → straight to clipboard (`grim -g "$(slurp)" - | wl-copy`)
+  - `CTRL+Print` → region select → annotate in satty → clipboard
+    (`grim -g "$(slurp)" - | satty --filename - --early-exit --copy-command wl-copy`)
+- **Dependency:** `wl-copy` (from `wl-clipboard`) for clipboard output.
+- **Gotcha:** an earlier version did `mkdir -p ~/Pictures/Screenshots` and saved files;
+  reverted to clipboard-only. Don't reintroduce the save dir unless saving is wanted.
+- **Recording:** `wf-recorder` is installed but intentionally NOT configured yet
+  (deferred — will set up a rofi toggle applet if/when needed).
+- **Ansible steps:** (1) `pacman -S grim slurp satty wl-clipboard`,
+  (2) deploy `screenshots.conf` + the `source` line in `hyprland.conf`.
 
 ### Screen Lock
 <!-- Log: tool (swaylock / hyprlock), config -->
@@ -184,7 +205,14 @@ Entries are removed once they have been automated into Ansible or committed as d
   (encrypted) instead of being manually recreated.
 
 ### Prompt (starship / p10k / etc.)
-<!-- Log: theme/config used -->
+- **Tool:** Powerlevel10k (p10k) — zsh prompt theme.
+- **Config:** `~/.p10k.zsh` is now part of the `zsh/` stow package
+  (`zsh/.p10k.zsh`, symlinked to `~/.p10k.zsh`). Sourced by `.zshrc` via
+  `[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh`.
+- **Gotcha:** the config was previously a plain file in `$HOME` (not tracked) —
+  would have been lost on a clean reinstall. Now committed alongside `.zshrc`.
+- **Ansible steps:** deploy `zsh/.p10k.zsh` with the rest of the `zsh/` dotfiles
+  (the p10k *engine* itself comes from the plugin manager / `zsh-theme-powerlevel10k`).
 
 ---
 
