@@ -49,8 +49,8 @@ Entries are removed once they have been automated into Ansible or committed as d
 **Dynamic borders** (`hyprland-dynamic-borders` by devadathanmb)
 - Script fetched from `https://raw.githubusercontent.com/devadathanmb/hyprland-dynamic-borders/main/dynamic-borders.sh`, `chmod a+x`, placed at `~/.local/bin/dynamic-borders.sh`
 - Autostarted via `exec-once = ~/.local/bin/dynamic-borders.sh` in `workspaces.conf` (sourced from `hyprland.conf`)
-- Runtime dep: **socat** (see Packages) — listens on the Hyprland event socket to recolor borders per active window
-- Ansible TODO: `get_url` the script → `~/.local/bin` (mode 0755), ensure socat installed, ensure the `exec-once` line is present
+- Runtime deps: **socat** + **jq** (see Packages) — socat listens on the Hyprland event socket, jq parses the JSON; borders recolor per active window
+- Ansible TODO: `get_url` the script → `~/.local/bin` (mode 0755), ensure socat + jq installed, ensure the `exec-once` line is present
 
 ### Waybar
 <!-- Log: modules enabled, CSS changes -->
