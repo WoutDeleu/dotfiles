@@ -5,6 +5,9 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+### Helpers — load first so the rest of this file can use them (e.g. `src`).
+[ -f "$HOME/.config/zsh/helpers.zsh" ] && source "$HOME/.config/zsh/helpers.zsh"
+
 ### Oh-My-Zsh
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -40,8 +43,11 @@ alias zshsrc="source ~/.zshrc"
 export EDITOR=nvim
 export VISUAL=nvim
 
-### AI tooling
-export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1
+### Claude Code
+src "$HOME/.config/zsh/claude-code.zsh"
 
-### Secrets (not tracked in git — see zsh/.zsh_secrets.example)
-[ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
+### Secrets — machine-local, never tracked (folder: ~/.config/secrets/*.zsh)
+for _secret in "$HOME"/.config/secrets/*.zsh(N); do source "$_secret"; done
+unset _secret
+### Terminal/tab title hooks (working dir when idle, command when running)
+src "$HOME/.config/zsh/tab_title.zsh"
