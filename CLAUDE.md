@@ -117,41 +117,15 @@ Example questions to ask:
 - "Why did you pick this tool over alternatives?"
 
 ### Creating GitHub Tickets
-When asked to create tickets or issues in the GitHub project:
-- Use the `gh` CLI tool via the Bash tool
-- Structure tickets as **user stories** with **success criteria**
-- Format the issue body with:
-  - User story describing the goal (e.g., "Configure i3 window manager")
-  - Success criteria as a checklist of tasks to complete
-- Include relevant labels (e.g., `enhancement`, `bug`, `documentation`)
-- Reference related issues or PRs when applicable
-- **After creating the issue, add it to the GitHub project** (WoutDeleu/projects/5)
 
-Example structure:
-```markdown
-## User Story
-Configure i3 window manager for optimal workflow
+**Use the `project-board-maintenance` skill** for all board operations.
 
-## Success Criteria
-- [ ] Setup Ansible playbook for i3 installation
-- [ ] Write and review i3 config file
-- [ ] Test config on fresh install
-```
+Key rules:
+- **Title**: clear and concise — the main assignment in a few words
+- **Description**: brief and structured. Use bullet points, checklists (`- [ ]`), and headers where they help. Enough context to know what to do — not a full spec.
+- **Every task must have a parent Epic** — link after creation via `addSubIssue` GraphQL mutation
+- **Epics get Type = Epic on the board; Tasks get Type = Task**
+- **No labels**
+- New issues are auto-added to the board as Todo via GitHub Action (`.github/workflows/auto-add-to-project.yml`), requires `ADD_TO_PROJECT_PAT` secret
 
-Example commands:
-```bash
-# Create the issue
-gh issue create --title "Configure i3 window manager" --body "$(cat <<'EOF'
-## User Story
-Configure i3 window manager for optimal workflow
-
-## Success Criteria
-- [ ] Setup Ansible playbook for i3 installation
-- [ ] Write and review i3 config file
-- [ ] Test config on fresh install
-EOF
-)" --label "enhancement"
-
-# Add the issue to the project (replace ISSUE_NUMBER with the created issue number)
-gh project item-add 5 --owner WoutDeleu --url https://github.com/WoutDeleu/linux-setup/issues/ISSUE_NUMBER
-```
+Current Epics: #96 Desktop Environment, #97 Development Environment, #98 Applications, #99 System Infrastructure
