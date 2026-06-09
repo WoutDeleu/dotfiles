@@ -192,17 +192,23 @@ Entries are removed once they have been automated into Ansible or committed as d
 <!-- Log: plugin manager, plugins installed, .zshrc customizations -->
 
 #### Secrets handling
-- **Pattern:** API keys / secrets are kept OUT of the tracked `.zshrc`. `.zshrc` ends with
-  `[ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"`; real values live in
-  `~/.zsh_secrets` (mode `600`, gitignored).
-- **Template:** `zsh/.zsh_secrets.example` is committed so a fresh setup knows which vars to fill.
-- **Gitignore:** repo-root `.gitignore` excludes `.zsh_secrets`, `*_secrets`, `*.secret`, and
-  vault-password files.
-- **Currently held:** `ANTHROPIC_BASE_URL`, `ANTHROPIC_API_KEY` (axxes bridge).
-- **⚠️ TODO — migrate to Ansible Vault:** the `~/.zsh_secrets` file is currently machine-local only,
-  so it does NOT survive a clean reinstall. Encrypt it with `ansible-vault` and have the playbook
-  decrypt + deploy it to `~/.zsh_secrets` on setup, so secrets are part of the recoverable backup
-  (encrypted) instead of being manually recreated.
+- **Pattern:** API keys / secrets are kept OUT of the tracked `.zshrc`. Real values live in a
+  machine-local **folder** `~/.config/secrets/` (dir mode `700`, files mode `600`), one file per
+  category (e.g. `ai.zsh`). `.zshrc` sources the whole folder:
+  `for _secret in "$HOME"/.config/secrets/*.zsh(N); do source "$_secret"; done`.
+- **Template:** committed at `zsh/secrets.example/ai.zsh`. The `zsh/` stow package carries a
+  `.stow-local-ignore` (`secrets\.example`) so the template is NOT symlinked into `$HOME`.
+- **Gitignore:** repo-root `.gitignore` excludes `*_secrets`, `*.secret`, `.zsh_secrets`, and
+  vault-password files. The real `~/.config/secrets/` lives outside the repo entirely, so it can't
+  be tracked by accident.
+- **Currently held:** `~/.config/secrets/ai.zsh` → `ANTHROPIC_BASE_URL`, `ANTHROPIC_API_KEY`
+  (axxes bridge).
+- **History:** replaced the earlier single flat file `~/.zsh_secrets` (+ `zsh/.zsh_secrets.example`)
+  with this per-category folder on 2026-06-09.
+- **⚠️ TODO — migrate to Ansible Vault:** `~/.config/secrets/` is machine-local only, so it does NOT
+  survive a clean reinstall. Encrypt these with `ansible-vault` and have the playbook decrypt +
+  deploy them on setup, so secrets are part of the recoverable backup (encrypted) instead of being
+  manually recreated. See the **Ansible Secrets Checklist** (Phase 7).
 
 ### Prompt (starship / p10k / etc.)
 - **Tool:** Powerlevel10k (p10k) — zsh prompt theme.
@@ -228,6 +234,18 @@ Entries are removed once they have been automated into Ansible or committed as d
 
 ### Git
 <!-- Log: global config, credential helper, SSH key setup -->
+
+### SSH
+- **Config via stow:** `~/.ssh/config` is a symlink into the `ssh/` stow package
+  (`ssh/.ssh/config`). Because `~/.ssh` already exists (holds the keys), stow links only the
+  `config` file and leaves everything else as real local files.
+- **Keys are NEVER tracked:** repo-root `.gitignore` has `ssh/.ssh/*` + `!ssh/.ssh/config`, so only
+  `config` can ever be committed — private keys / `known_hosts` are excluded even if copied in.
+- **Current keys (machine-local, mode `600`):** `~/.ssh/arrakis` (+`.pub`) for host `arrakis`,
+  `~/.ssh/id_ed25519` (+`.pub`). These must be restored from the encrypted backup (see Ansible
+  Secrets Checklist) on a clean install.
+- **Ansible steps:** (1) `stow ssh` to deploy `~/.ssh/config`; (2) vault-decrypt the private keys
+  into `~/.ssh/` with mode `0600` (dir `0700`).
 
 ### Claude Code
 <!-- Log: install method, config -->
@@ -280,6 +298,10 @@ Entries are removed once they have been automated into Ansible or committed as d
 ### Backup System
 <!-- Log: tool (restic / borgbackup), remote target, schedule -->
 
+### Ansible Secrets Checklist
+➡️ Full checklist lives in **`ansible/SECRETS.md`** (single source of truth — vault password, AI
+creds, SSH keys, git identity/auth, with destinations and modes). Add new secrets there.
+
 ---
 
 ## Decisions & Notes
@@ -295,3 +317,6 @@ Entries are removed once they have been automated into Ansible or committed as d
 | 2026-06-06 | Zsh secrets in gitignored `~/.zsh_secrets` (sourced from `.zshrc`) | Keep API keys out of the tracked dotfiles. TODO: graduate to Ansible Vault so secrets are part of the encrypted, recoverable backup |
 | 2026-06-06 | Cursor theme = Bibata-Modern-Amber (size 24), via AUR `bibata-cursor-theme` | Consistent rounded cursor across GTK + Hyprland. AUR install lands in `/usr/share/icons` system-wide; applied via gsettings + Hyprland `env`/`hyprctl setcursor` |
 | 2026-06-06 | swaync themed config (navy/orange, top-right, balanced timeouts, DND + volume/backlight sliders) | Custom notification daemon styled to match the desktop; kept as stow package `swaync/`. Critical notifications never auto-dismiss; `backlight` device `amdgpu_bl1` is machine-specific |
+| 2026-06-09 | SSH `config` managed via `ssh/` stow package; keys gitignored | `~/.ssh` already holds the keys so stow links only `config`; `.gitignore` (`ssh/.ssh/*` + `!config`) guarantees private keys / `known_hosts` are never committed |
+| 2026-06-09 | Secrets moved from flat `~/.zsh_secrets` to folder `~/.config/secrets/*.zsh` | Per-category files (e.g. `ai.zsh`), dir `700`/files `600`, sourced via a loop in `.zshrc`. Real folder lives outside the repo; template `zsh/secrets.example/ai.zsh` kept out of `$HOME` via `.stow-local-ignore` |
+| 2026-06-09 | Added Ansible Secrets Checklist (Phase 7) | Single source of truth for everything the vault must restore on a clean install (AI creds, SSH keys, git identity/auth) |
