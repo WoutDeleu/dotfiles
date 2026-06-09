@@ -1,0 +1,2 @@
+# Patterns (regex) of paths in this package that stow must NOT symlink into $HOME.
+secrets\.example

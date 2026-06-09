@@ -6,3 +6,7 @@
 # Ansible Vault password files
 .vault_pass
 *.vault-pass
+
+# SSH — track only config, never private keys / known_hosts
+ssh/.ssh/*
+!ssh/.ssh/config
