@@ -1,0 +1,5 @@
+[user]
+	name = WoutDeleu
+	email = WoutDeleu@users.noreply.github.com
+[merge]
+	tool = nvimdiff
