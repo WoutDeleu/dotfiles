@@ -35,6 +35,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ### Aliases
 alias ls="eza -a --icons=always --color=always"
+alias cat="bat --paging=never"
 alias v="nvim"
 alias zshconfig="v ~/dotfiles/zsh/.zshrc"
 alias zshsrc="source ~/.zshrc"
@@ -42,6 +43,10 @@ alias zshsrc="source ~/.zshrc"
 ### Editor
 export EDITOR=nvim
 export VISUAL=nvim
+
+### fzf — fuzzy finder shell integration
+# CTRL-R history search, CTRL-T file picker, ALT-C cd into dir.
+command -v fzf >/dev/null && source <(fzf --zsh)
 
 ### Claude Code
 src "$HOME/.config/zsh/claude-code.zsh"

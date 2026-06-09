@@ -210,6 +210,21 @@ Entries are removed once they have been automated into Ansible or committed as d
   deploy them on setup, so secrets are part of the recoverable backup (encrypted) instead of being
   manually recreated. See the **Ansible Secrets Checklist** (Phase 7).
 
+#### fzf
+- **Tool:** `fzf` — fuzzy finder. `pacman -S fzf` (official repo).
+- **Shell integration (done):** `.zshrc` sources fzf's zsh keybindings + completion via
+  `command -v fzf >/dev/null && source <(fzf --zsh)`. Gives `CTRL-R` history search,
+  `CTRL-T` file picker, `ALT-C` cd-into-dir. (`fzf --zsh` requires fzf ≥ 0.48; running 0.72.)
+- **Ansible steps:** (1) `pacman -S fzf`, (2) deploy the `source <(fzf --zsh)` line as part of
+  the `zsh/` dotfiles (already in `zsh/.zshrc`).
+
+#### bat (cat replacement)
+- **Tool:** `bat` — `cat` clone with syntax highlighting. `pacman -S bat` (official repo).
+- **Alias (in `zsh/.zshrc`):** `alias cat="bat --paging=never"` — drop-in replacement that
+  never invokes a pager. Scripts/pipes are unaffected (aliases don't apply in non-interactive
+  shells), so the real `cat` is still used there.
+- **Ansible steps:** (1) `pacman -S bat`, (2) the alias ships with the `zsh/` dotfiles.
+
 ### Prompt (starship / p10k / etc.)
 - **Tool:** Powerlevel10k (p10k) — zsh prompt theme.
 - **Config:** `~/.p10k.zsh` is now part of the `zsh/` stow package
@@ -320,3 +335,5 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-09 | SSH `config` managed via `ssh/` stow package; keys gitignored | `~/.ssh` already holds the keys so stow links only `config`; `.gitignore` (`ssh/.ssh/*` + `!config`) guarantees private keys / `known_hosts` are never committed |
 | 2026-06-09 | Secrets moved from flat `~/.zsh_secrets` to folder `~/.config/secrets/*.zsh` | Per-category files (e.g. `ai.zsh`), dir `700`/files `600`, sourced via a loop in `.zshrc`. Real folder lives outside the repo; template `zsh/secrets.example/ai.zsh` kept out of `$HOME` via `.stow-local-ignore` |
 | 2026-06-09 | Added Ansible Secrets Checklist (Phase 7) | Single source of truth for everything the vault must restore on a clean install (AI creds, SSH keys, git identity/auth) |
+| 2026-06-09 | fzf installed (pacman) + zsh integration via `source <(fzf --zsh)` | Fuzzy finder; CTRL-R/CTRL-T/ALT-C keybindings wired into `.zshrc`. Modern `fzf --zsh` hook (needs ≥0.48) instead of sourcing the `/usr/share/fzf/*.zsh` scripts |
+| 2026-06-09 | bat replaces `cat` via `alias cat="bat --paging=never"` | Syntax-highlighted `cat` for interactive use; `--paging=never` keeps it drop-in. Pipes/scripts still hit real `cat`, so nothing breaks |
