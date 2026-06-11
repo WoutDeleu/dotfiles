@@ -30,16 +30,17 @@ Entries are removed once they have been automated into Ansible or committed as d
 | slurp | Wayland region selector, piped into grim/satty (see Screenshots) | manual |
 | satty | Screenshot annotation editor (see Screenshots) | manual |
 | wl-clipboard | Provides `wl-copy`/`wl-paste`; clipboard output for screenshots | manual |
+| cliphist | Wayland clipboard history manager — stores clipboard entries; needs watcher + picker to be useful (see Clipboard History) | manual — `pacman -S cliphist` |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
 |---------|-----------|---------|--------|
-|  |  |  | manual |
+| logiops | yay | Logitech HID++ daemon (`logid`) — remaps MX Master 3 buttons/gestures (see Input Devices) | manual |
 
 ### Services Enabled
 | Service | Command | Status |
 |---------|---------|--------|
-|  |  | manual |
+| logid | `systemctl enable --now logid` | MX Master 3 button remapping daemon (logiops) |
 
 ---
 
@@ -117,6 +118,17 @@ Entries are removed once they have been automated into Ansible or committed as d
   (deferred — will set up a rofi toggle applet if/when needed).
 - **Ansible steps:** (1) `pacman -S grim slurp satty wl-clipboard`,
   (2) deploy `screenshots.conf` + the `source` line in `hyprland.conf`.
+
+### Clipboard History
+- **Tool:** `cliphist` — `pacman -S cliphist` (depends on `wl-clipboard`, already installed).
+- **How it works:** `wl-paste` watches the clipboard and pipes every copy event into `cliphist store`. History is queried via `cliphist list` and decoded with `cliphist decode | wl-copy`.
+- **Still needed:**
+  - [ ] Start the watcher on login: add `exec-once = wl-paste --watch cliphist store` to Hyprland config
+  - [ ] Choose a picker (`wofi`, `rofi-wayland`, or `fuzzel`) and add keybinding, e.g.:
+    ```
+    bind = $mainMod, V, exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy
+    ```
+- **Ansible steps:** (1) `pacman -S cliphist`, (2) add `exec-once` and keybind to dotfiles.
 
 ### Screen Lock
 <!-- Log: tool (swaylock / hyprlock), config -->
@@ -295,7 +307,41 @@ Entries are removed once they have been automated into Ansible or committed as d
 <!-- Log: packages, fastconnectable config -->
 
 ### Input Devices
-<!-- Log: keyboard layout, caps/escape swap, touchpad config -->
+
+#### Keyboard modifiers (NuPhy Halo65, macOS mode)
+- **Goal:** `$mainMod = SUPER` everywhere. Laptop Win key = Super natively. The external
+  NuPhy Halo65 stays physically in **macOS mode** (Opt→Alt, Cmd→Super), so its main-mod key
+  would be wrong.
+- **Fix:** per-device `kb_options` in `hyprland/.config/hypr/hyprland.conf` swaps left Alt↔Win
+  on that keyboard only, so **Opt acts as SUPER** (and Cmd becomes Alt):
+  ```
+  device {
+      name = nuphy-halo65-v2-2-keyboard
+      kb_options = caps:escape,escape:caps,altwin:swap_lalt_lwin
+  }
+  ```
+  Per-device `kb_options` fully override the global `input { kb_options }`, so the caps/escape
+  swap is repeated here. Device name comes from `hyprctl devices`.
+
+#### MX Master 3 — thumb button as $mainMod (logiops)
+- **Goal:** hold the **thumb gesture button** + roll the **normal scroll wheel** → cycle workspaces.
+- **Why logiops:** Hyprland bind modifiers are keyboard-only — a mouse button can't be a held
+  modifier in a native `bind`. logiops (`logid` daemon) remaps at the device level.
+- **Mechanism:** map the thumb gesture button (`cid: 0xc3`) to a `Keypress` of the current
+  `$mainMod`. logiops holds the key while the button is held, so thumb-button + scroll =
+  `$mainMod`+scroll, which hits the existing Hyprland bind
+  `bind = $mainMod, mouse_down/up, workspace, e+1/e-1` (in `workspaces.conf`).
+  No Hyprland change needed beyond that bind.
+- **Key must match `$mainMod`:** `$mainMod = ALT` → emit `KEY_LEFTALT`. If `$mainMod` ever
+  becomes SUPER, change the key to `KEY_LEFTMETA`.
+- **Install:** `yay -S logiops` (AUR).
+- **Config:** committed at **`ansible/files/logid.cfg`**, deploys to `/etc/logid.cfg`
+  (root-owned, NOT a stow dotfile). The thumb button (`cid: 0xc3`) → `Keypress KEY_LEFTALT`.
+- **Enable:** `sudo systemctl enable --now logid`. Restart after edits: `sudo systemctl restart logid`.
+- **Gotcha:** the device `name:` must match exactly what `sudo logid -v` prints (may differ from
+  Hyprland's `hyprctl devices` label). Wrong name = daemon ignores the mouse silently.
+- **Ansible steps:** (1) `yay -S logiops`, (2) copy `ansible/files/logid.cfg` → `/etc/logid.cfg`,
+  (3) `systemctl enable --now logid`.
 
 ### Fn Keys / Media Controls
 <!-- Log: keybinding setup, wl-clipboard, brightnessctl, etc. -->
@@ -337,3 +383,4 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-09 | Added Ansible Secrets Checklist (Phase 7) | Single source of truth for everything the vault must restore on a clean install (AI creds, SSH keys, git identity/auth) |
 | 2026-06-09 | fzf installed (pacman) + zsh integration via `source <(fzf --zsh)` | Fuzzy finder; CTRL-R/CTRL-T/ALT-C keybindings wired into `.zshrc`. Modern `fzf --zsh` hook (needs ≥0.48) instead of sourcing the `/usr/share/fzf/*.zsh` scripts |
 | 2026-06-09 | bat replaces `cat` via `alias cat="bat --paging=never"` | Syntax-highlighted `cat` for interactive use; `--paging=never` keeps it drop-in. Pipes/scripts still hit real `cat`, so nothing breaks |
+| 2026-06-11 | MX Master 3 thumb button = `$mainMod` via logiops (`cid 0xc3` → `Keypress KEY_LEFTALT`) | Mouse buttons can't be Hyprland bind modifiers; logiops holds the mod key while the thumb button is down, so thumb+scroll cycles workspaces through the existing `$mainMod`+scroll bind. Key = `KEY_LEFTALT` to match `$mainMod = ALT`. logiops via AUR, config in `ansible/files/logid.cfg` → `/etc/logid.cfg`, `logid` service enabled |
