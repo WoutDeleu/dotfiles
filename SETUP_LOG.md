@@ -32,6 +32,8 @@ Entries are removed once they have been automated into Ansible or committed as d
 | wl-clipboard | Provides `wl-copy`/`wl-paste`; clipboard output for screenshots | manual |
 | cliphist | Wayland clipboard history manager — stores clipboard entries; needs watcher + picker to be useful (see Clipboard History) | manual — `pacman -S cliphist` |
 | hyprpolkitagent | Polkit authentication agent for Hyprland — handles privilege escalation popups (e.g. sudo GUI prompts) | manual — `pacman -S hyprpolkitagent` |
+| waybar | Status bar for Hyprland | manual — `pacman -S waybar` |
+| btop | Resource monitor (CPU/mem/net/disk) | manual — `pacman -S btop`, default config |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -44,6 +46,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | logid | `systemctl enable --now logid` | MX Master 3 button remapping daemon (logiops) |
 | hyprpolkitagent | `systemctl --user enable hyprpolkitagent` | Polkit agent for Hyprland — user-level service, starts on next login |
 | cliphist | `systemctl --user enable --now cliphist` | Clipboard history watcher — unit file in `systemd/` stow package |
+| waybar | `systemctl --user enable --now waybar` | Status bar — config in `waybar/` stow package |
 
 ---
 
@@ -53,7 +56,10 @@ Entries are removed once they have been automated into Ansible or committed as d
 <!-- Log: key config decisions, monitors, keybindings, window rules -->
 
 ### Waybar
-<!-- Log: modules enabled, CSS changes -->
+- **Install:** `pacman -S waybar`
+- **Autostart:** `systemctl --user enable --now waybar` (user service)
+- **Config:** in `waybar/` stow package.
+- **Ansible steps:** (1) `pacman -S waybar`, (2) stow `waybar/`, (3) `systemctl --user enable waybar`.
 
 ### Application Launcher (wofi / rofi-wayland)
 <!-- Log: choice made and why, config -->
