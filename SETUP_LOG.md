@@ -166,18 +166,15 @@ Entries are removed once they have been automated into Ansible or committed as d
   dependencies (qt6-svg, qt6-virtualkeyboard, qt6-multimedia), and writes the active theme to
   `/etc/sddm.conf.d/` (e.g. `Current=sddm-astronaut-theme`).
 - **Dependency:** requires `gum` (installed via pacman beforehand — see Packages table).
-- **TODO / not yet done:** `sddm.service` is NOT enabled yet (`systemctl enable sddm` still pending).
+- **TODO / not yet done:** ~~`sddm.service` is NOT enabled yet (`systemctl enable sddm` still pending).~~ ✅ Added to Ansible playbook.
 - **Theme variant:** `black_hole` — set via `ConfigFile=Themes/black_hole.conf` in
   `/usr/share/sddm/themes/sddm-astronaut-theme/metadata.desktop`.
 - **Custom background (intentional):** the stock `Backgrounds/black_hole.png` was replaced with a
   personal ultrawide wallpaper (3440x1440). Full path:
   `/usr/share/sddm/themes/sddm-astronaut-theme/Backgrounds/black_hole.png`.
   This is referenced by `Background="Backgrounds/black_hole.png"` in `Themes/black_hole.conf`.
-  Must be re-copied after the theme is (re)installed, otherwise a reinstall reverts to the stock image.
-- **Ansible note:** prefer packaging the theme files into a dotfiles/role rather than re-running the
-  remote `curl | bash` script. Capture: (1) variant = `black_hole` in `metadata.desktop`,
-  (2) the final `/etc/sddm.conf.d` config (`Current=sddm-astronaut-theme`), and
-  (3) the custom `black_hole.png` (store it in the repo and copy it over the theme's stock file).
+  ✅ Custom image stored in repo at `ansible/files/sddm/black_hole.png` — deployed by Ansible after theme clone.
+- **Ansible:** fully automated — git clone theme, Qt6 deps, deploy `sddm.conf`, `virtualkbd.conf`, `Xsetup`, and custom wallpaper.
 
 #### Multi-monitor greeter resolution (X11 Xsetup)
 - **Problem:** On the laptop + ultrawide setup, the SDDM greeter came up at a wrong/scaled
