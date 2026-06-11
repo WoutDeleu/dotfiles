@@ -1,4 +1,9 @@
 ---
+# NOTE: This playbook is a work in progress.
+# Tasks are commented out until the full setup is documented in SETUP_LOG.md
+# and ready to be automated in one structured pass.
+# DO NOT uncomment individual sections piecemeal — fill everything in at once.
+
 - name: Configure Arch Linux workstation
   hosts: local
   become: true
@@ -9,68 +14,68 @@
   tasks:
 
     # ── Base packages ────────────────────────────────────────────────────────
-    - name: Install base packages
-      community.general.pacman:
-        name:
-          - git
-          - stow
-          - base-devel
-        state: present
-        update_cache: true
+    # - name: Install base packages
+    #   community.general.pacman:
+    #     name:
+    #       - git
+    #       - stow
+    #       - base-devel
+    #     state: present
+    #     update_cache: true
 
     # ── Desktop (Wayland / Hyprland) ─────────────────────────────────────────
     # Add Hyprland, Waybar, wofi, hyprpaper, swaylock, etc. here
 
     # ── SDDM display manager ──────────────────────────────────────────────────
-    - name: Install SDDM and Qt6 theme dependencies
-      community.general.pacman:
-        name:
-          - sddm
-          - qt6-svg
-          - qt6-virtualkeyboard
-          - qt6-multimedia
-          - gum
-          - xorg-xrandr
-        state: present
+    # - name: Install SDDM and Qt6 theme dependencies
+    #   community.general.pacman:
+    #     name:
+    #       - sddm
+    #       - qt6-svg
+    #       - qt6-virtualkeyboard
+    #       - qt6-multimedia
+    #       - gum
+    #       - xorg-xrandr
+    #     state: present
 
-    - name: Clone sddm-astronaut-theme
-      ansible.builtin.git:
-        repo: https://github.com/keyitdev/sddm-astronaut-theme.git
-        dest: /usr/share/sddm/themes/sddm-astronaut-theme
-        version: master
-        force: false
+    # - name: Clone sddm-astronaut-theme
+    #   ansible.builtin.git:
+    #     repo: https://github.com/keyitdev/sddm-astronaut-theme.git
+    #     dest: /usr/share/sddm/themes/sddm-astronaut-theme
+    #     version: master
+    #     force: false
 
-    - name: Deploy sddm.conf (set active theme)
-      copy:
-        src: files/sddm/sddm.conf
-        dest: /etc/sddm.conf
-        owner: root
-        group: root
-        mode: '0644'
+    # - name: Deploy sddm.conf (set active theme)
+    #   copy:
+    #     src: files/sddm/sddm.conf
+    #     dest: /etc/sddm.conf
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
 
-    - name: Deploy sddm virtual keyboard conf
-      copy:
-        src: files/sddm/virtualkbd.conf
-        dest: /etc/sddm.conf.d/virtualkbd.conf
-        owner: root
-        group: root
-        mode: '0644'
+    # - name: Deploy sddm virtual keyboard conf
+    #   copy:
+    #     src: files/sddm/virtualkbd.conf
+    #     dest: /etc/sddm.conf.d/virtualkbd.conf
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
 
-    - name: Deploy Xsetup script (multi-monitor greeter fix)
-      copy:
-        src: files/sddm/Xsetup
-        dest: /usr/share/sddm/scripts/Xsetup
-        owner: root
-        group: root
-        mode: '0755'
+    # - name: Deploy Xsetup script (multi-monitor greeter fix)
+    #   copy:
+    #     src: files/sddm/Xsetup
+    #     dest: /usr/share/sddm/scripts/Xsetup
+    #     owner: root
+    #     group: root
+    #     mode: '0755'
 
-    - name: Deploy custom black_hole wallpaper
-      copy:
-        src: files/sddm/black_hole.png
-        dest: /usr/share/sddm/themes/sddm-astronaut-theme/Backgrounds/black_hole.png
-        owner: root
-        group: root
-        mode: '0644'
+    # - name: Deploy custom black_hole wallpaper
+    #   copy:
+    #     src: files/sddm/black_hole.png
+    #     dest: /usr/share/sddm/themes/sddm-astronaut-theme/Backgrounds/black_hole.png
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
 
     # ── Terminal & shell ─────────────────────────────────────────────────────
     # Add terminal emulator, zsh, starship, etc. here
@@ -82,50 +87,53 @@
     # Add Brave, Bitwarden, file manager, etc. here
 
     # ── System services ──────────────────────────────────────────────────────
-    - name: Deploy logid config
-      copy:
-        src: files/logid.cfg
-        dest: /etc/logid.cfg
-        owner: root
-        group: root
-        mode: '0644'
+    # - name: Deploy logid config
+    #   copy:
+    #     src: files/logid.cfg
+    #     dest: /etc/logid.cfg
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
 
-    - name: Enable system services
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        enabled: true
-        state: started
-        daemon_reload: true
-      loop:
-        - logid
-        - sddm
+    # - name: Enable system services
+    #   ansible.builtin.systemd:
+    #     name: "{{ item }}"
+    #     enabled: true
+    #     state: started
+    #     daemon_reload: true
+    #   loop:
+    #     - logid
+    #     - sddm
 
     # ── User services ─────────────────────────────────────────────────────────
-    - name: Enable user services
-      become: false
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        enabled: true
-        state: started
-        scope: user
-        daemon_reload: true
-      environment:
-        XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
-      loop:
-        - hyprpolkitagent
-        - cliphist
+    # - name: Enable user services
+    #   become: false
+    #   ansible.builtin.systemd:
+    #     name: "{{ item }}"
+    #     enabled: true
+    #     state: started
+    #     scope: user
+    #     daemon_reload: true
+    #   environment:
+    #     XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+    #   loop:
+    #     - hyprpolkitagent
+    #     - cliphist
 
     # ── Dotfiles ─────────────────────────────────────────────────────────────
-    - name: Stow dotfiles
-      become: false
-      command:
-        cmd: stow {{ item }}
-        chdir: "{{ ansible_env.HOME }}/linux-setup/dotfiles"
-      loop: []
-        # - hyprland
-        # - waybar
-        # - terminal
-        # - nvim
-        # - git
-        # - systemd
-      when: false  # remove this line once packages are populated
+    # - name: Stow dotfiles
+    #   become: false
+    #   command:
+    #     cmd: stow {{ item }}
+    #     chdir: "{{ ansible_env.HOME }}/linux-setup/dotfiles"
+    #   loop:
+    #     - hyprland
+    #     - waybar
+    #     - terminal
+    #     - nvim
+    #     - git
+    #     - systemd
+
+    - name: Placeholder (remove when first real task is uncommented)
+      ansible.builtin.debug:
+        msg: "Playbook is a stub — see SETUP_LOG.md"
