@@ -43,6 +43,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 |---------|---------|--------|
 | logid | `systemctl enable --now logid` | MX Master 3 button remapping daemon (logiops) |
 | hyprpolkitagent | `systemctl --user enable hyprpolkitagent` | Polkit agent for Hyprland — user-level service, starts on next login |
+| cliphist | `systemctl --user enable --now cliphist` | Clipboard history watcher — unit file in `systemd/` stow package |
 
 ---
 
@@ -124,13 +125,15 @@ Entries are removed once they have been automated into Ansible or committed as d
 ### Clipboard History
 - **Tool:** `cliphist` — `pacman -S cliphist` (depends on `wl-clipboard`, already installed).
 - **How it works:** `wl-paste` watches the clipboard and pipes every copy event into `cliphist store`. History is queried via `cliphist list` and decoded with `cliphist decode | wl-copy`.
+- **Daemon:** managed as a systemd user service (not `exec-once`) — unit file at `systemd/.config/systemd/user/cliphist.service` (stow package `systemd/`).
+  - Enable: `systemctl --user enable --now cliphist`
+  - Stow: `cd dotfiles && stow systemd`
 - **Still needed:**
-  - [ ] Start the watcher on login: add `exec-once = wl-paste --watch cliphist store` to Hyprland config
   - [ ] Choose a picker (`wofi`, `rofi-wayland`, or `fuzzel`) and add keybinding, e.g.:
     ```
     bind = $mainMod, V, exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy
     ```
-- **Ansible steps:** (1) `pacman -S cliphist`, (2) add `exec-once` and keybind to dotfiles.
+- **Ansible steps:** (1) `pacman -S cliphist`, (2) stow `systemd/`, (3) `systemctl --user enable --now cliphist`, (4) add keybind to dotfiles.
 
 ### Screen Lock
 <!-- Log: tool (swaylock / hyprlock), config -->
