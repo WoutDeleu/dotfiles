@@ -31,7 +31,38 @@
     # Add Brave, Bitwarden, file manager, etc. here
 
     # ── System services ──────────────────────────────────────────────────────
-    # Add systemd service enables here
+    - name: Deploy logid config
+      copy:
+        src: files/logid.cfg
+        dest: /etc/logid.cfg
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Enable system services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+        daemon_reload: true
+      loop:
+        - logid
+        - sddm
+
+    # ── User services ─────────────────────────────────────────────────────────
+    - name: Enable user services
+      become: false
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+        scope: user
+        daemon_reload: true
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+      loop:
+        - hyprpolkitagent
+        - cliphist
 
     # ── Dotfiles ─────────────────────────────────────────────────────────────
     - name: Stow dotfiles
@@ -45,4 +76,5 @@
         # - terminal
         # - nvim
         # - git
+        # - systemd
       when: false  # remove this line once packages are populated
