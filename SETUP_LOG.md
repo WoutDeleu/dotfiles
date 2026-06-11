@@ -31,6 +31,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | satty | Screenshot annotation editor (see Screenshots) | manual |
 | wl-clipboard | Provides `wl-copy`/`wl-paste`; clipboard output for screenshots | manual |
 | cliphist | Wayland clipboard history manager — stores clipboard entries; needs watcher + picker to be useful (see Clipboard History) | manual — `pacman -S cliphist` |
+| hyprpolkitagent | Polkit authentication agent for Hyprland — handles privilege escalation popups (e.g. sudo GUI prompts) | manual — `pacman -S hyprpolkitagent` |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -41,6 +42,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | Service | Command | Status |
 |---------|---------|--------|
 | logid | `systemctl enable --now logid` | MX Master 3 button remapping daemon (logiops) |
+| hyprpolkitagent | `systemctl --user enable hyprpolkitagent` | Polkit agent for Hyprland — user-level service, starts on next login |
 
 ---
 
