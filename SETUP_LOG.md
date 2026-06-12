@@ -393,7 +393,25 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
   (3) `systemctl enable --now logid`.
 
 ### Fn Keys / Media Controls
-<!-- Log: keybinding setup, wl-clipboard, brightnessctl, etc. -->
+- **Media keys** (`XF86AudioPlay/Pause/Next/Prev`) bound in `hyprland/.config/hypr/keybindings.conf` via `playerctl-smart.sh`
+- **playerctl:** `pacman -S playerctl` — MPRIS controller used for all media key actions
+- **Smart player selection:** `waybar/.config/waybar/scripts/playerctl-smart.sh` — finds the currently Playing MPRIS player first, falls back to first available. Avoids wrong-player issues when multiple MPRIS sources are registered (e.g. browser + music app)
+- **Gotcha:** browsers (brave, firefox) register as MPRIS players but don't support Next/Previous. play-pause works; skip controls only work with dedicated music apps (Spotify, VLC, etc.)
+- **Ansible steps:** `pacman -S playerctl`, stow `waybar/` and `hyprland/`
+
+### Waybar — Media / Now Playing module
+- **mpris module** grouped with `custom/cava` in `group/media` (green bottom stripe pill)
+- **Click controls** on the mpris entry: left = play-pause, right = next, middle = previous, scroll = next/prev (all via `playerctl-smart.sh`)
+- **cava visualizer:** `custom/cava` module runs `waybar/.config/waybar/scripts/cava.sh`; only shows bars when a player is in Playing state. Config at `waybar/.config/waybar/cava.conf` (8 bars, ASCII output)
+- **Install cava:** `pacman -S cava` (not yet installed — module is configured and ready)
+- **Ansible steps:** `pacman -S cava playerctl`, stow `waybar/`; ensure `cava.sh` and `playerctl-smart.sh` are `+x`
+
+### swaync — Notification Center Styling
+- Restyled to match waybar color palette (`#0e1626` bg, `#162032` notification bg, `#d4e0f0` text, `#f07830` accent)
+- Reduced sizes: font 13px body / 14px summary (was 15/16px), border-radius 12px (was 25px), icon 48px (was 64px)
+- Toggle buttons use orange accent (`#f07830`) instead of blue; system action buttons use muted `#3a5270`
+- Config: `swaync/.config/swaync/style.css`
+- **Reload:** `swaync-client --reload-css`
 
 ### Networking
 | Package | Purpose | Status |
@@ -439,3 +457,7 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-09 | fzf installed (pacman) + zsh integration via `source <(fzf --zsh)` | Fuzzy finder; CTRL-R/CTRL-T/ALT-C keybindings wired into `.zshrc`. Modern `fzf --zsh` hook (needs ≥0.48) instead of sourcing the `/usr/share/fzf/*.zsh` scripts |
 | 2026-06-09 | bat replaces `cat` via `alias cat="bat --paging=never"` | Syntax-highlighted `cat` for interactive use; `--paging=never` keeps it drop-in. Pipes/scripts still hit real `cat`, so nothing breaks |
 | 2026-06-11 | MX Master 3 thumb button = `$mainMod` via logiops (`cid 0xc3` → `Keypress KEY_LEFTALT`) | Mouse buttons can't be Hyprland bind modifiers; logiops holds the mod key while the thumb button is down, so thumb+scroll cycles workspaces through the existing `$mainMod`+scroll bind. Key = `KEY_LEFTALT` to match `$mainMod = ALT`. logiops via AUR, config in `ansible/files/logid.cfg` → `/etc/logid.cfg`, `logid` service enabled |
+| 2026-06-13 | Media keys use `playerctl-smart.sh` instead of plain `playerctl` | `playerctl` picks the wrong player when multiple MPRIS sources are registered (browser wins over music app). Smart script iterates players, picks the one in Playing state first |
+| 2026-06-13 | Browser MPRIS next/previous not supported | Brave/Firefox register as MPRIS players but only implement play/pause — skip controls silently do nothing. Not a script bug; inherent browser limitation |
+| 2026-06-13 | cava visualizer in waybar — hidden when not playing | `custom/cava` module runs cava with ASCII output; script checks `playerctl status` each frame and emits empty string when nothing is Playing so the bars disappear when music stops |
+| 2026-06-13 | swaync styled to match waybar palette | Consistent navy/orange theme across bar and notification center; reduced sizes (12px radius, 13px font) to feel less bloated |
