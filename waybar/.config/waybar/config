@@ -8,31 +8,58 @@
     "margin-right": 12,
 
     "modules-left": [
-        // "hyprland/window",
-        "custom/separator",
-        "hyprland/workspaces",
-        "custom/separator",
+        "group/ws",
         "mpris"
     ],
 
     "modules-center": [
-        "clock",
-        "custom/separator",
-        "custom/weather"
+        "group/cal",
+        "group/wx"
     ],
 
     "modules-right": [
-        "custom/performance",
-        "custom/separator",
-        "network",
-        "bluetooth",
-        "pulseaudio",
-        "battery",
-        "custom/separator",
-        "custom/notifications",
-        "custom/separator",
-        "custom/power"
+        "group/perf",
+        "group/indicators",
+        "group/volume",
+        "group/ctrl"
     ],
+
+    // ── Groups ───────────────────────────────────────────────────────────────
+
+    "group/ws": {
+        "orientation": "horizontal",
+        "modules": ["hyprland/workspaces"]
+    },
+
+    "group/cal": {
+        "orientation": "horizontal",
+        "modules": ["custom/ycal"]
+    },
+
+    "group/wx": {
+        "orientation": "horizontal",
+        "modules": ["custom/weather"]
+    },
+
+    "group/perf": {
+        "orientation": "horizontal",
+        "modules": ["custom/cpu", "custom/ram"]
+    },
+
+    "group/indicators": {
+        "orientation": "horizontal",
+        "modules": ["network", "bluetooth", "backlight", "battery"]
+    },
+
+    "group/volume": {
+        "orientation": "horizontal",
+        "modules": ["custom/volume"]
+    },
+
+    "group/ctrl": {
+        "orientation": "horizontal",
+        "modules": ["custom/notifications", "custom/power"]
+    },
 
     // ── Left ─────────────────────────────────────────────────────────────────
 
@@ -74,85 +101,115 @@
 
     // ── Center ────────────────────────────────────────────────────────────────
 
-    "clock": {
-        // "format": "󰥔 {:%H:%M  󰃭 %a %d %b}",
-        // "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-	// "on-click": "waybar-gcal agenda",
-	// "on-click-right": "waybar-gcal month",
-	// "on-click-middle": "waybar-gcal agenda --timezone Asia/Singapore",
-	// "calendar": {
-	//   "mode": "month",
-	//   "weeks-pos": "right",
-	//   "iso8601": true
-	// },
-	"exec": "~/.config/waybar/scripts/ycal-bar.py",
-	"on-click": "~/.config/waybar/scripts/ycal-toggle.sh",
+    "custom/ycal": {
+	"exec": "~/.config/waybar-ycal/bar.py",
+	"on-click": "~/.config/waybar-ycal/toggle.sh",
 	"interval": 60,
 	"return-type": "json"
     },
 
     "custom/weather": {
-        "exec": "curl -sf 'https://wttr.in/?format=%c+%t' | tr -d '+'",
-        "interval": 1800,
-        "tooltip": true,
-        "tooltip-exec": "curl -sf 'https://wttr.in/?format=%l:+%C,+%t+(%f),+%h+humidity'",
-        "on-click": "~/.config/waybar/scripts/popup.sh weather"
+       "format": "{}",
+       "tooltip": true,
+       "return-type": "json",
+       "exec": "~/.config/waybar/scripts/weather/get_weather.rb",
+       "signal": 2,
+       "interval": 900 // Every 15 minutes
     },
 
     // ── Right ─────────────────────────────────────────────────────────────────
 
-    "custom/performance": {
-        "exec": "~/.config/waybar/scripts/performance.sh",
-        "interval": 5,
-        "tooltip": true,
-        "tooltip-exec": "~/.config/waybar/scripts/performance-detail.sh",
-        "on-click": "~/.config/waybar/scripts/popup.sh btop"
+    "custom/cpu": {
+       "exec": "~/.config/waybar/scripts/top-cpu.sh",
+       "return-type": "json",
+       "interval": 3,
+       "format": "{}",
+       "tooltip": true,
+       "icon": "",
+       "color": "#ffb86c",
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh btop-float kitty --class btop-float btop"
+    },
+    "custom/ram": {
+       "exec": "~/.config/waybar/scripts/top-memory.sh",
+       "return-type": "json",
+       "interval": 3,
+       "format": "{}",
+       "tooltip": true,
+       "icon": "",
+       "color": "#8be9fd",
+       "on-click": "~/.config/waybar/scripts/toggle-float.sh btop-float kitty --class btop-float btop"
+    },
+
+    "backlight": {
+        "device": "amdgpu_bl1",
+        "format": "<span size='large'>{icon}</span>",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
+        "tooltip-format": "{percent}%",
+        "on-scroll-up": "brightnessctl set 5%+",
+        "on-scroll-down": "brightnessctl set 5%-"
     },
 
     "network": {
-        "format-wifi": "󰤨 {essid}",
-        "format-ethernet": "󰈀 {ifname}",
-        "format-disconnected": "󰤭",
+        "format-wifi": "<span size='large'>󰤨</span>",
+        "format-ethernet": "<span size='large'>󰈀</span>",
+        "format-disconnected": "<span size='large'>󰤭</span>",
         "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
         "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
-        "on-click": "nm-connection-editor"
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh impala-float kitty --class impala-float impala"
     },
 
     "bluetooth": {
-        "format": "󰂯",
-        "format-connected": "󰂱 {device_alias}",
-        "format-connected-battery": "󰂱 {device_alias} {device_battery_percentage}%",
-        "format-disabled": "󰂲",
+        "format": "<span size='large'>󰂯</span>",
+        "format-connected": "<span size='large'>󰂱</span>",
+        "format-connected-battery": "<span size='large'>󰂱</span>",
+        "format-disabled": "<span size='large'>󰂲</span>",
         "tooltip-format": "{controller_alias}\n{num_connections} connected",
         "tooltip-format-connected": "{controller_alias}\n{num_connections} connected\n{device_enumerate}",
         "tooltip-format-enumerate-connected": "  {device_alias}",
         "tooltip-format-enumerate-connected-battery": "  {device_alias} ({device_battery_percentage}%)",
-        "on-click": "blueman-manager"
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh bluetui-float kitty --class bluetui-float bluetui"
     },
 
+    "custom/volume": {
+        "exec": "~/.config/waybar/scripts/volume.sh",
+        "return-type": "json",
+        "interval": 2,
+        "tooltip": true,
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh pulsemixer-float kitty --class pulsemixer-float pulsemixer",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -SIGRTMIN+3 waybar",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -SIGRTMIN+3 waybar",
+        "signal": 3
+    },
     "pulseaudio": {
-        "format": "{icon} {volume}%",
-        "format-muted": "󰝟",
+        "format": "{volume}% {icon}",
+        "format-muted": "muted 󰝟",
         "format-icons": {
             "headphone": "󰋋",
             "headset": "󰋎",
+            "hdmi": "󰡁",
             "default": ["󰕿", "󰖀", "󰕾"]
         },
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
         "scroll-step": 5,
-        "on-click": "pavucontrol",
-        "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh pulsemixer-float kitty --class pulsemixer-float pulsemixer"
     },
-
     "battery": {
-        "format": "{icon} {capacity}%",
-        "format-charging": "󰂄 {capacity}%",
-        "format-plugged": "󰚥 {capacity}%",
-        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "format": "<span size='large'>{icon}</span>",
+        "format-charging": "<span size='large'>󰂄</span>",
+        "format-plugged": "<span size='large'>󰚥</span>",
+        "format-icons": {
+            "default": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+            "charging": ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"]
+	},
         "states": {
             "warning": 30,
             "critical": 15
         },
-        "tooltip-format": "{timeTo}\n{power}W"
+        "tooltip": true,
+        "tooltip-format": "{capacity}%\n{timeTo}\n{power}W"
     },
 
     "custom/notifications": {
@@ -165,11 +222,6 @@
     },
 
     // ── Shared ────────────────────────────────────────────────────────────────
-
-    "custom/separator": {
-        "format": " ",
-        "tooltip": false
-    },
 
     "custom/power": {
         "format": "⏻",
