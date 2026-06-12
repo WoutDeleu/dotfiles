@@ -25,8 +25,9 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
-# GLOBDOTS lets files beginning with a . be matched without explicitly specifying the dot.
+# Include hidden files in completion/glob, but exclude . and .. from tab completion
 setopt globdots
+zstyle -e ':completion:*' special-dirs '[[ $PREFIX = (../)#(|.|..) ]] && reply=(..)'
 
 
 ### Powerlevel10k
