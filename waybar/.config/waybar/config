@@ -9,7 +9,7 @@
 
     "modules-left": [
         "group/ws",
-        "mpris"
+        "group/media"
     ],
 
     "modules-center": [
@@ -29,6 +29,11 @@
     "group/ws": {
         "orientation": "horizontal",
         "modules": ["hyprland/workspaces"]
+    },
+
+    "group/media": {
+        "orientation": "horizontal",
+        "modules": ["mpris", "custom/cava"]
     },
 
     "group/cal": {
@@ -72,31 +77,53 @@
     "hyprland/workspaces": {
         "format": "{icon}",
         "format-icons": {
-            "active":   "",
-            "occupied": "",
-            "empty":    ""
+            "1":  "󰆍",
+            "2":  "󰊤",
+            "3":  "󰅩",
+            "4":  "󰃤",
+            "5":  "󰭹",
+            "6":  "󰊫",
+            "7":  "󰃵",
+            "8":  "󰋋",
+            "9":  "󰅧",
+            "10": "󰧞",
+            "urgent":  "󱐋",
+            "default": "󰧞"
         },
         "persistent-workspaces": {
-            "*": 5
+            "DP-1":  [1, 2, 3, 4, 7],
+            "eDP-1": [5, 6, 8, 9, 10]
         },
-        "on-scroll-up": "hyprctl dispatch workspace e+1",
+        "on-scroll-up":   "hyprctl dispatch workspace e+1",
         "on-scroll-down": "hyprctl dispatch workspace e-1"
     },
 
     "mpris": {
-        "format": "{player_icon} {title}",
+        "format": "{status_icon} {player_icon} {title}",
         "format-paused": " {title}",
         "player-icons": {
             "default": "▶",
-            "spotify": "",
+            "spotify": "",
             "firefox": "󰈹",
-            "chromium": ""
+            "chromium": "󰊯",
+	    "brave": "󰊯"
         },
         "status-icons": {
-            "paused": ""
+            "paused": ""
         },
         "max-length": 40,
-        "ignored-players": ["firefox"]
+        "ignored-players": ["firefox"],
+        "on-click":        "~/.config/waybar/scripts/playerctl-smart.sh play-pause",
+        "on-click-right":  "~/.config/waybar/scripts/playerctl-smart.sh next",
+        "on-click-middle": "~/.config/waybar/scripts/playerctl-smart.sh previous",
+        "on-scroll-up": "swayosd-client --output-volume raise",
+        "on-scroll-down": "swayosd-client --output-volume lower"
+    },
+
+    "custom/cava": {
+        "exec": "~/.config/waybar/scripts/cava.sh",
+        "format": "{}",
+        "tooltip": false
     },
 
     // ── Center ────────────────────────────────────────────────────────────────

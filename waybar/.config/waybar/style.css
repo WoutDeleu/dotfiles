@@ -41,13 +41,13 @@ window#waybar {
 
 /* ── Group blocks (pills) ────────────────────────────────────────────────── */
 
-#ws,
 #cal,
 #wx,
 #perf,
 #indicators,
 #volume,
-#ctrl {
+#ctrl,
+#media {
     background-color: @bg;
     border-radius: 12px;
     border: 1px solid @bg-alt;
@@ -56,58 +56,79 @@ window#waybar {
     margin: 2px 4px;
 }
 
-#ws    { border-bottom-color: @mauve; }
+#ws {
+    background-color: @bg;
+    border-radius: 14px;
+    border: 1px solid @border;
+    padding: 0 2px;
+    margin: 2px 4px;
+}
+
 #cal   { border-bottom-color: @accent; }
 #wx    { border-bottom-color: @teal; }
 #perf  { border-bottom-color: @warning; }
 #indicators { border-bottom-color: @green; }
 #volume     { border-bottom-color: @mauve; }
 #ctrl  { border-bottom-color: @subtext; }
+#media { border-bottom-color: @green; }
 
 /* ── Workspaces ──────────────────────────────────────────────────────────── */
 
-#workspaces {
+#ws {
     padding: 0 2px;
+}
+
+#workspaces {
+    padding: 0;
 }
 
 #workspaces button {
     color: @muted;
-    padding: 2px 8px;
+    background: transparent;
     border-radius: 10px;
     margin: 3px 1px;
-    background: transparent;
-    font-size: 13px;
+    padding: 0 11px;
+    font-size: 18px;
+    min-width: 0;
+    min-height: 30px;
+    transition: all 0.2s ease;
 }
 
 #workspaces button.active {
-    color: @accent;
+    color: @bg;
+    background: @accent;
+    padding: 0 14px;
+    border-radius: 10px;
+}
+
+#workspaces button.occupied:not(.active) {
+    color: @fg;
     background: @bg-alt;
 }
 
-#workspaces button.occupied {
-    color: @subtext;
+#workspaces button.urgent {
+    color: @bg;
+    background: @critical;
 }
 
-#workspaces button:hover {
-    background: @bg-hover;
+#workspaces button:hover:not(.active) {
     color: @fg;
+    background: @bg-hover;
 }
 
 /* ── Left modules ────────────────────────────────────────────────────────── */
 
-#window {
-    color: @subtext;
-    font-style: italic;
+#mpris {
+    color: @green;
     padding: 0 8px;
 }
 
-#mpris {
-    background-color: @bg;
-    border-radius: 12px;
-    border: 1px solid @bg-alt;
-    padding: 0 12px;
-    margin: 2px 4px;
+#custom-cava {
     color: @green;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 0 8px 0 2px;
+    min-width: 60px;
 }
 
 /* ── Center modules ──────────────────────────────────────────────────────── */
