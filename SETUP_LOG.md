@@ -39,7 +39,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | Package | AUR Helper | Purpose | Status |
 |---------|-----------|---------|--------|
 | logiops | yay | Logitech HID++ daemon (`logid`) — remaps MX Master 3 buttons/gestures (see Input Devices) | manual |
-| waybar-google-calendar | yay | Google Calendar module for Waybar — OAuth not yet configured | manual |
+| ycal | yay | Google Calendar module for Waybar — client secret at `~/.config/waybar-ycal/client_secret.json` (gitignored, via stow), OAuth not yet configured | manual |
 
 ### Services Enabled
 | Service | Command | Status |

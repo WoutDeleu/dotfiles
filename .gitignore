@@ -12,5 +12,5 @@ ssh/.ssh/*
 !ssh/.ssh/config
 
 # Google Calendar OAuth client secret — deploy via Ansible Vault
-# real file lives at ~/.config/waybar/google-calendar/client_secret.json (via stow)
-waybar/.config/waybar/google-calendar/client_secret.json
+# real file lives at ~/.config/waybar-ycal/client_secret.json (via stow)
+waybar/.config/waybar-ycal/client_secret.json

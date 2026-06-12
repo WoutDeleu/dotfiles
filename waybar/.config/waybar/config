@@ -85,8 +85,8 @@
 	//   "weeks-pos": "right",
 	//   "iso8601": true
 	// },
-	"exec": "/usr/share/waybar-ycal/bar.py",
-	"on-click": "/usr/share/waybar-ycal/toggle.sh",
+	"exec": "~/.config/waybar/scripts/ycal-bar.py",
+	"on-click": "~/.config/waybar/scripts/ycal-toggle.sh",
 	"interval": 60,
 	"return-type": "json"
     },
