@@ -1,0 +1,212 @@
+/* ── waybar-ycal popup style (Catppuccin Mocha) ──────────────────────────── */
+/* Loaded at STYLE_PROVIDER_PRIORITY_USER — overrides all generated defaults. */
+
+* {
+    font-family: "JetBrainsMonoNL Nerd Font", "JetBrainsMono Nerd Font", "Symbols Nerd Font", "Noto Sans", sans-serif;
+    font-size: 13px;
+}
+
+/* ── Popup container ─────────────────────────────────────────────────────── */
+
+.popup-bg {
+    background: rgba(30, 30, 46, 0.95);           /* base #1e1e2e */
+    border-radius: 14px;
+    border: 1px solid rgba(88, 91, 112, 0.55);    /* overlay0 */
+    padding: 12px;
+}
+
+/* ── Buttons (base reset) ────────────────────────────────────────────────── */
+
+button {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: #cdd6f4;                                /* text */
+    font-size: 11px;
+    font-weight: 500;
+}
+
+button:hover {
+    background: rgba(69, 71, 90, 0.65);            /* surface1 */
+}
+
+button:active {
+    background: rgba(88, 91, 112, 0.5);            /* overlay0 */
+    transition: background 50ms;
+}
+
+button:focus,
+button:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+label {
+    color: #cdd6f4;                                /* text */
+}
+
+/* ── Calendar grid ───────────────────────────────────────────────────────── */
+
+.weekday {
+    color: rgba(166, 173, 200, 0.5);               /* subtext0 dimmed */
+    font-size: 12px;
+}
+
+.other-month {
+    opacity: 0.18;
+}
+
+.other-month:hover {
+    background: transparent;
+}
+
+.weekend {
+    background: rgba(49, 50, 68, 0.55);            /* surface0 */
+    border-radius: 10px;
+}
+
+.weekend-label {
+    color: rgba(203, 166, 247, 0.7);               /* mauve */
+}
+
+.today {
+    background: rgba(137, 180, 250, 0.45);         /* blue */
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.today:hover {
+    background: rgba(137, 180, 250, 0.62);
+}
+
+.selected {
+    border: 1px solid rgba(137, 180, 250, 0.85);
+    border-radius: 10px;
+}
+
+.today.selected {
+    border: 1px solid #cdd6f4;
+}
+
+/* ── Event / task indicators ─────────────────────────────────────────────── */
+
+.event-bar {
+    background: rgba(137, 180, 250, 0.9);          /* blue */
+    border-radius: 2px;
+    min-height: 2px;
+}
+
+.today .event-bar {
+    background: #cdd6f4;
+}
+
+.task-bar {
+    background: rgba(243, 139, 168, 0.9);          /* red */
+    border-radius: 2px;
+    min-height: 2px;
+}
+
+.event-dot  { color: rgba(137, 180, 250, 0.9); font-size: 11px; }  /* blue */
+.task-dot   { color: rgba(243, 139, 168, 0.9); font-size: 11px; }  /* red */
+.done-dot   { color: rgba(166, 227, 161, 0.9); font-size: 11px; }  /* green */
+
+.event-name {
+    font-size: 12px;
+    color: #cdd6f4;
+}
+
+/* ── Day panel ───────────────────────────────────────────────────────────── */
+
+.panel-divider {
+    background: rgba(137, 180, 250, 0.2);
+    min-width: 1px;
+    margin: 0 8px;
+}
+
+.day-panel {
+    padding: 2px 4px 2px 0;
+}
+
+.day-heading {
+    font-size: 12px;
+    color: #a6adc8;                                /* subtext0 */
+    margin-bottom: 4px;
+}
+
+.no-events {
+    font-size: 12px;
+    color: rgba(166, 173, 200, 0.4);
+    font-style: italic;
+}
+
+/* ── Done toggles ────────────────────────────────────────────────────────── */
+
+.done-toggle {
+    font-size: 10px;
+    min-width: 18px;
+    min-height: 18px;
+    padding: 0;
+    border-radius: 4px;
+}
+
+.done-toggle-inactive {
+    border: 1px solid rgba(205, 214, 244, 0.2);
+    color: transparent;
+}
+
+.done-toggle-inactive:hover {
+    border-color: rgba(166, 227, 161, 0.6);
+    color: rgba(166, 227, 161, 0.6);
+}
+
+.done-toggle-active {
+    border: 1px solid rgba(166, 227, 161, 0.6);
+    color: rgba(166, 227, 161, 0.9);
+    background: rgba(166, 227, 161, 0.15);
+}
+
+/* ── Action buttons ──────────────────────────────────────────────────────── */
+
+.add-btn {
+    background: rgba(137, 180, 250, 0.12);
+    border: 1px solid rgba(137, 180, 250, 0.35);
+    border-radius: 8px;
+    color: #cdd6f4;
+    font-size: 11px;
+    padding: 4px 0;
+    margin-top: 4px;
+}
+
+.add-btn:hover {
+    background: rgba(137, 180, 250, 0.25);
+}
+
+/* ── Refresh button ──────────────────────────────────────────────────────── */
+/* Note: the icon itself is Cairo-drawn; size is controlled in popup.py.      */
+
+.refresh-btn {
+    background: rgba(137, 180, 250, 0.12);
+    border: 1px solid rgba(137, 180, 250, 0.4);
+    border-radius: 10px;
+    padding: 2px;
+}
+
+.refresh-btn:hover {
+    background: rgba(137, 180, 250, 0.28);
+}
+
+/* ── Setup screen ────────────────────────────────────────────────────────── */
+
+.setup-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #cdd6f4;
+    margin-top: 8px;
+    margin-bottom: 6px;
+}
+
+.setup-msg {
+    font-size: 11px;
+    color: rgba(166, 173, 200, 0.65);
+    margin-bottom: 12px;
+}
