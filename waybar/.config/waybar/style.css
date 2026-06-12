@@ -1,0 +1,210 @@
+/* ── Waybar Style ──────────────────────────────────────────────────────────── */
+
+@define-color bg        #1e1e2e;
+@define-color bg-alt    #313244;
+@define-color bg-hover  #45475a;
+@define-color border    #585b70;
+@define-color fg        #cdd6f4;
+@define-color accent    #89b4fa;
+@define-color mauve     #cba6f7;
+@define-color warning   #f9e2af;
+@define-color critical  #f38ba8;
+@define-color green     #a6e3a1;
+@define-color teal      #94e2d5;
+@define-color subtext   #a6adc8;
+@define-color muted     #585b70;
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    transition: all 0.15s ease;
+}
+
+window#waybar {
+    background-color: transparent;
+    color: @fg;
+}
+
+/* ── Pill containers ─────────────────────────────────────────────────────── */
+
+.modules-left,
+.modules-center,
+.modules-right {
+    background-color: @bg;
+    border-radius: 14px;
+    border: 1px solid @bg-alt;
+    padding: 0 10px;
+    margin: 2px 0;
+}
+
+/* ── Workspaces ──────────────────────────────────────────────────────────── */
+
+#workspaces {
+    padding: 0 2px;
+}
+
+#workspaces button {
+    color: @muted;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin: 3px 1px;
+    background: transparent;
+    font-size: 13px;
+}
+
+#workspaces button.active {
+    color: @accent;
+    background: @bg-alt;
+}
+
+#workspaces button.occupied {
+    color: @subtext;
+}
+
+#workspaces button:hover {
+    background: @bg-hover;
+    color: @fg;
+}
+
+/* ── Left modules ────────────────────────────────────────────────────────── */
+
+#window {
+    color: @subtext;
+    font-style: italic;
+    padding: 0 8px;
+}
+
+#mpris {
+    color: @green;
+    padding: 0 8px;
+}
+
+/* ── Center modules ──────────────────────────────────────────────────────── */
+
+#clock {
+    color: @fg;
+    font-weight: bold;
+    padding: 0 10px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+#clock.has-events {
+    color: @accent;
+}
+
+#clock:hover {
+    color: @fg;
+}
+
+#custom-weather {
+    color: @teal;
+    padding: 0 8px;
+}
+
+/* ── Right modules ───────────────────────────────────────────────────────── */
+
+#custom-performance {
+    color: @mauve;
+    padding: 0 8px;
+}
+
+#custom-performance:hover {
+    color: @fg;
+}
+
+#network {
+    color: @fg;
+    padding: 0 6px;
+}
+
+#network.disconnected {
+    color: @critical;
+}
+
+#bluetooth {
+    color: @accent;
+    padding: 0 6px;
+}
+
+#bluetooth.disabled {
+    color: @muted;
+}
+
+#pulseaudio {
+    color: @fg;
+    padding: 0 6px;
+}
+
+#pulseaudio.muted {
+    color: @muted;
+}
+
+#battery {
+    color: @green;
+    padding: 0 6px;
+}
+
+#battery.charging {
+    color: @teal;
+}
+
+#battery.warning {
+    color: @warning;
+}
+
+#battery.critical {
+    color: @critical;
+    animation: blink 1s step-end infinite;
+}
+
+#custom-notifications {
+    color: @fg;
+    padding: 0 6px;
+}
+
+#custom-notifications.has-notifications {
+    color: @accent;
+}
+
+#custom-power {
+    color: @critical;
+    padding: 0 4px 0 6px;
+    font-size: 13px;
+}
+
+#custom-power:hover {
+    color: @fg;
+}
+
+/* ── Separator ───────────────────────────────────────────────────────────── */
+
+#custom-separator {
+    color: @muted;
+    padding: 0;
+    font-size: 11px;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+
+tooltip {
+    background: @bg;
+    border: 1px solid @border;
+    border-radius: 10px;
+    color: @fg;
+    padding: 4px 8px;
+}
+
+tooltip label {
+    color: @fg;
+    padding: 2px 4px;
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes blink {
+    to { color: @bg; background-color: @critical; }
+}
