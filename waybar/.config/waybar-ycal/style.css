@@ -1,4 +1,4 @@
-/* ── waybar-ycal popup style (Catppuccin Mocha) ──────────────────────────── */
+/* ── waybar-ycal popup style (Dark Navy + Orange) ─────────────────────────── */
 /* Loaded at STYLE_PROVIDER_PRIORITY_USER — overrides all generated defaults. */
 
 * {
@@ -9,9 +9,9 @@
 /* ── Popup container ─────────────────────────────────────────────────────── */
 
 .popup-bg {
-    background: rgba(30, 30, 46, 0.95);           /* base #1e1e2e */
+    background: rgba(14, 22, 38, 0.97);            /* bg #0e1626 */
     border-radius: 14px;
-    border: 1px solid rgba(88, 91, 112, 0.55);    /* overlay0 */
+    border: 1px solid rgba(42, 63, 88, 0.7);       /* border */
     padding: 12px;
 }
 
@@ -21,17 +21,17 @@ button {
     background: transparent;
     border: 1px solid transparent;
     border-radius: 10px;
-    color: #cdd6f4;                                /* text */
+    color: #d4e0f0;
     font-size: 11px;
     font-weight: 500;
 }
 
 button:hover {
-    background: rgba(69, 71, 90, 0.65);            /* surface1 */
+    background: rgba(30, 45, 66, 0.65);            /* bg-hover */
 }
 
 button:active {
-    background: rgba(88, 91, 112, 0.5);            /* overlay0 */
+    background: rgba(42, 63, 88, 0.5);
     transition: background 50ms;
 }
 
@@ -42,13 +42,13 @@ button:focus-visible {
 }
 
 label {
-    color: #cdd6f4;                                /* text */
+    color: #d4e0f0;
 }
 
 /* ── Calendar grid ───────────────────────────────────────────────────────── */
 
 .weekday {
-    color: rgba(166, 173, 200, 0.5);               /* subtext0 dimmed */
+    color: rgba(122, 150, 180, 0.6);               /* subtext dimmed */
     font-size: 12px;
 }
 
@@ -61,64 +61,64 @@ label {
 }
 
 .weekend {
-    background: rgba(49, 50, 68, 0.55);            /* surface0 */
+    background: rgba(22, 32, 50, 0.6);             /* bg-alt */
     border-radius: 10px;
 }
 
 .weekend-label {
-    color: rgba(203, 166, 247, 0.7);               /* mauve */
+    color: rgba(255, 159, 67, 0.7);                /* amber/mauve */
 }
 
 .today {
-    background: rgba(137, 180, 250, 0.45);         /* blue */
+    background: rgba(240, 120, 48, 0.35);          /* orange accent */
     border-radius: 10px;
     font-weight: bold;
 }
 
 .today:hover {
-    background: rgba(137, 180, 250, 0.62);
+    background: rgba(240, 120, 48, 0.55);
 }
 
 .selected {
-    border: 1px solid rgba(137, 180, 250, 0.85);
+    border: 1px solid rgba(240, 120, 48, 0.85);
     border-radius: 10px;
 }
 
 .today.selected {
-    border: 1px solid #cdd6f4;
+    border: 1px solid #d4e0f0;
 }
 
 /* ── Event / task indicators ─────────────────────────────────────────────── */
 
 .event-bar {
-    background: rgba(137, 180, 250, 0.9);          /* blue */
+    background: rgba(240, 120, 48, 0.9);           /* orange */
     border-radius: 2px;
     min-height: 2px;
 }
 
 .today .event-bar {
-    background: #cdd6f4;
+    background: #d4e0f0;
 }
 
 .task-bar {
-    background: rgba(243, 139, 168, 0.9);          /* red */
+    background: rgba(240, 64, 96, 0.9);            /* critical red */
     border-radius: 2px;
     min-height: 2px;
 }
 
-.event-dot  { color: rgba(137, 180, 250, 0.9); font-size: 11px; }  /* blue */
-.task-dot   { color: rgba(243, 139, 168, 0.9); font-size: 11px; }  /* red */
-.done-dot   { color: rgba(166, 227, 161, 0.9); font-size: 11px; }  /* green */
+.event-dot  { color: rgba(240, 120, 48, 0.9);  font-size: 11px; }  /* orange */
+.task-dot   { color: rgba(240, 64, 96, 0.9);   font-size: 11px; }  /* red */
+.done-dot   { color: rgba(68, 201, 144, 0.9);  font-size: 11px; }  /* green */
 
 .event-name {
     font-size: 12px;
-    color: #cdd6f4;
+    color: #d4e0f0;
 }
 
 /* ── Day panel ───────────────────────────────────────────────────────────── */
 
 .panel-divider {
-    background: rgba(137, 180, 250, 0.2);
+    background: rgba(240, 120, 48, 0.2);
     min-width: 1px;
     margin: 0 8px;
 }
@@ -129,13 +129,13 @@ label {
 
 .day-heading {
     font-size: 12px;
-    color: #a6adc8;                                /* subtext0 */
+    color: #7a96b4;                                /* subtext */
     margin-bottom: 4px;
 }
 
 .no-events {
     font-size: 12px;
-    color: rgba(166, 173, 200, 0.4);
+    color: rgba(122, 150, 180, 0.4);
     font-style: italic;
 }
 
@@ -150,49 +150,48 @@ label {
 }
 
 .done-toggle-inactive {
-    border: 1px solid rgba(205, 214, 244, 0.2);
+    border: 1px solid rgba(212, 224, 240, 0.2);
     color: transparent;
 }
 
 .done-toggle-inactive:hover {
-    border-color: rgba(166, 227, 161, 0.6);
-    color: rgba(166, 227, 161, 0.6);
+    border-color: rgba(68, 201, 144, 0.6);
+    color: rgba(68, 201, 144, 0.6);
 }
 
 .done-toggle-active {
-    border: 1px solid rgba(166, 227, 161, 0.6);
-    color: rgba(166, 227, 161, 0.9);
-    background: rgba(166, 227, 161, 0.15);
+    border: 1px solid rgba(68, 201, 144, 0.6);
+    color: rgba(68, 201, 144, 0.9);
+    background: rgba(68, 201, 144, 0.15);
 }
 
 /* ── Action buttons ──────────────────────────────────────────────────────── */
 
 .add-btn {
-    background: rgba(137, 180, 250, 0.12);
-    border: 1px solid rgba(137, 180, 250, 0.35);
+    background: rgba(240, 120, 48, 0.1);
+    border: 1px solid rgba(240, 120, 48, 0.35);
     border-radius: 8px;
-    color: #cdd6f4;
+    color: #d4e0f0;
     font-size: 11px;
     padding: 4px 0;
     margin-top: 4px;
 }
 
 .add-btn:hover {
-    background: rgba(137, 180, 250, 0.25);
+    background: rgba(240, 120, 48, 0.25);
 }
 
 /* ── Refresh button ──────────────────────────────────────────────────────── */
-/* Note: the icon itself is Cairo-drawn; size is controlled in popup.py.      */
 
 .refresh-btn {
-    background: rgba(137, 180, 250, 0.12);
-    border: 1px solid rgba(137, 180, 250, 0.4);
+    background: rgba(240, 120, 48, 0.1);
+    border: 1px solid rgba(240, 120, 48, 0.4);
     border-radius: 10px;
     padding: 2px;
 }
 
 .refresh-btn:hover {
-    background: rgba(137, 180, 250, 0.28);
+    background: rgba(240, 120, 48, 0.28);
 }
 
 /* ── Setup screen ────────────────────────────────────────────────────────── */
@@ -200,13 +199,13 @@ label {
 .setup-title {
     font-size: 14px;
     font-weight: bold;
-    color: #cdd6f4;
+    color: #d4e0f0;
     margin-top: 8px;
     margin-bottom: 6px;
 }
 
 .setup-msg {
     font-size: 11px;
-    color: rgba(166, 173, 200, 0.65);
+    color: rgba(122, 150, 180, 0.65);
     margin-bottom: 12px;
 }

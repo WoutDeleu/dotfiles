@@ -21,9 +21,9 @@ today_events = events.get(today.isoformat(), [])
 
 output = {
     "text": (
-        f"<span color='#89b4fa'>\uf073</span> "
-        f"<span color='#a6adc8'>{now.strftime('%a %d %b')}</span> "
-        f"<span color='#cba6f7'>\udb82\udd54 {now.strftime('%H:%M')}</span>"
+        f"<span color='#f07830'>\uf073</span> "
+        f"<span color='#7a96b4'>{now.strftime('%a %d %b')}</span> "
+        f"<span color='#ff9f43'>\udb82\udd54 {now.strftime('%H:%M')}</span>"
     ),
     "tooltip": "",
     "class": "has-events" if today_events else ""

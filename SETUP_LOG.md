@@ -41,6 +41,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 |---------|-----------|---------|--------|
 | logiops | yay | Logitech HID++ daemon (`logid`) — remaps MX Master 3 buttons/gestures (see Input Devices) | manual |
 | ycal | yay | Google Calendar module for Waybar — client secret at `~/.config/waybar-ycal/client_secret.json` (gitignored, via stow), OAuth not yet configured | manual |
+| swayosd-git | yay | Wayland OSD for volume/brightness — shows overlay bar on key/scroll change | manual — `yay -S swayosd-git` |
 
 ### Services Enabled
 | Service | Command | Status |
@@ -49,6 +50,8 @@ Entries are removed once they have been automated into Ansible or committed as d
 | hyprpolkitagent | `systemctl --user enable hyprpolkitagent` | Polkit agent for Hyprland — user-level service, starts on next login |
 | cliphist | `systemctl --user enable --now cliphist` | Clipboard history watcher — unit file in `systemd/` stow package |
 | waybar | `systemctl --user enable --now waybar` | Status bar — config in `waybar/` stow package |
+| swayosd-server | run as user — `swayosd-server &` or via Hyprland `exec-once` | OSD display daemon |
+| swayosd-libinput-backend | `sudo systemctl enable --now swayosd-libinput-backend` | **system** service — required for brightness control via libinput |
 
 ---
 
