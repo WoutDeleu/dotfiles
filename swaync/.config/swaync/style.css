@@ -1,25 +1,26 @@
 :root {
-  --cc-bg: rgba(10, 23, 38, 0.95);
-  --noti-border-color: rgba(120, 160, 210, 0.18);
-  --noti-bg: 16, 32, 52;
+  /* Colors aligned with waybar palette */
+  --cc-bg: rgba(14, 22, 38, 0.95);           /* @bg  #0e1626 */
+  --noti-border-color: rgba(42, 63, 88, 0.6); /* @border #2a3f58 */
+  --noti-bg: 22, 32, 50;                      /* @bg-alt #162032 */
   --noti-bg-alpha: 0.98;
-  --noti-bg-darker: rgb(7, 17, 28);
-  --noti-bg-hover: rgb(24, 44, 70);
-  --noti-bg-focus: rgba(28, 58, 94, 0.8);
-  --noti-close-bg: rgb(28, 50, 78);
-  --noti-close-bg-hover: rgb(40, 66, 100);
-  --text-color: rgb(255, 255, 255);
-  --text-color-disabled: rgb(150, 150, 150);
-  --bg-selected: rgb(0, 128, 255);
-  --notification-icon-size: 64px;
+  --noti-bg-darker: rgb(10, 17, 30);
+  --noti-bg-hover: rgb(30, 45, 66);           /* @bg-hover #1e2d42 */
+  --noti-bg-focus: rgba(30, 45, 66, 0.8);
+  --noti-close-bg: rgb(42, 63, 88);           /* @border #2a3f58 */
+  --noti-close-bg-hover: rgb(58, 82, 112);
+  --text-color: rgb(212, 224, 240);            /* @fg #d4e0f0 */
+  --text-color-disabled: rgb(122, 150, 180);   /* @subtext #7a96b4 */
+  --bg-selected: rgb(240, 120, 48);            /* @accent #f07830 */
+  --notification-icon-size: 48px;
   --notification-app-icon-size: calc(var(--notification-icon-size) / 3);
-  --notification-group-icon-size: 32px;
-  --border: 1.5px solid var(--noti-border-color);
-  --border-radius: 25px;
+  --notification-group-icon-size: 24px;
+  --border: 1px solid var(--noti-border-color);
+  --border-radius: 12px;
   --notification-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
     0 1px 3px 1px rgba(0, 0, 0, 0.7), 0 2px 6px 2px rgba(0, 0, 0, 0.3);
-  --font-size-body: 15px;
-  --font-size-summary: 16px;
+  --font-size-body: 13px;
+  --font-size-summary: 14px;
   /* Deprecated variables (because of their typos). Keeeping them around for backwards compatibility. */
   --hover-tranistion: background 0.15s ease-in-out;
   --group-collapse-tranistion: opacity 400ms ease-in-out;
@@ -29,19 +30,19 @@
 
 /* Fallback for older CSS themes */
 /* Fallback for older CSS themes */
-@define-color cc-bg rgba(10, 23, 38, 0.95);
-@define-color noti-border-color rgba(120, 160, 210, 0.18);
-@define-color noti-bg rgba(16, 32, 52, 0.98);
-@define-color noti-bg-opaque rgb(16, 32, 52);
-@define-color noti-bg-darker rgb(7, 17, 28);
-@define-color noti-bg-hover rgb(24, 44, 70);
-@define-color noti-bg-hover-opaque rgb(24, 44, 70);
-@define-color noti-bg-focus rgba(28, 58, 94, 0.8);
-@define-color noti-close-bg rgba(120, 160, 210, 0.12);
-@define-color noti-close-bg-hover rgba(120, 160, 210, 0.20);
-@define-color text-color rgb(255, 255, 255);
-@define-color text-color-disabled rgb(150, 150, 150);
-@define-color bg-selected rgb(0, 128, 255);
+@define-color cc-bg rgba(14, 22, 38, 0.95);
+@define-color noti-border-color rgba(42, 63, 88, 0.6);
+@define-color noti-bg rgba(22, 32, 50, 0.98);
+@define-color noti-bg-opaque rgb(22, 32, 50);
+@define-color noti-bg-darker rgb(10, 17, 30);
+@define-color noti-bg-hover rgb(30, 45, 66);
+@define-color noti-bg-hover-opaque rgb(30, 45, 66);
+@define-color noti-bg-focus rgba(30, 45, 66, 0.8);
+@define-color noti-close-bg rgba(42, 63, 88, 0.5);
+@define-color noti-close-bg-hover rgba(58, 82, 112, 0.6);
+@define-color text-color rgb(212, 224, 240);
+@define-color text-color-disabled rgb(122, 150, 180);
+@define-color bg-selected rgb(240, 120, 48);
 notificationwindow, blankwindow, blankwindow {
   background: transparent;
 }
@@ -393,7 +394,7 @@ notificationwindow, blankwindow, blankwindow {
 /* Title widget */
 .widget-title > label {
   margin-right: 8px;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
 }
 
 .widget-title > button {
@@ -405,7 +406,7 @@ notificationwindow, blankwindow, blankwindow {
 .widget-dnd label {
   color: var(--text-color);
   margin-right: 8px;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
 }
 
 .widget-dnd switch {
@@ -419,14 +420,14 @@ notificationwindow, blankwindow, blankwindow {
 
 /* Label widget */
 .widget-label > label {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
 }
 
 /* Mpris widget */
 :root {
   --mpris-album-art-overlay: rgba(0, 0, 0, 0.55);
   --mpris-button-hover: rgba(0, 0, 0, 0.5);
-  --mpris-album-art-icon-size: 96px;
+  --mpris-album-art-icon-size: 72px;
   --mpris-album-art-shadow: 0px 0px 10px rgba(0, 0, 0, 0.75);
 }
 
@@ -463,11 +464,11 @@ notificationwindow, blankwindow, blankwindow {
 
 .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
   font-weight: bold;
-  font-size: 1.25rem;
+  font-size: 1.0rem;
 }
 
 .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
 }
 
 .widget-mpris .widget-mpris-player .mpris-overlay > box > button {
@@ -574,7 +575,7 @@ notificationwindow, blankwindow, blankwindow {
 /* Inhibitors widget */
 .widget-inhibitors > label {
   margin-right: 8px;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
 }
 
 .widget-inhibitors > button {
@@ -586,16 +587,16 @@ notificationwindow, blankwindow, blankwindow {
 
 .widget-volume label:first-child,
 .widget-backlight label:first-child {
-  font-size: 1.5rem;     /* increase or tweak: try 2rem if you want even bigger */
+  font-size: 1.1rem;
   line-height: 1.2;
   margin-right: 10px;
-  color: var(--text-color); /* keeps same color as text */
+  color: var(--text-color);
 }
 
 /* Make sure it aligns nicely with the slider */
 .widget-volume,
 .widget-backlight {
-  padding: 10px 14px;
+  padding: 8px 12px;
 }
 
 /* --- Balance button-grid alignment & spacing --- */
@@ -605,14 +606,13 @@ notificationwindow, blankwindow, blankwindow {
 }
 
 .widget-buttons-grid flowboxchild > button.toggle:checked {
-  background: rgba(72, 141, 245, 0.6);
-  /* box-shadow: 0 0 6px rgba(247, 27, 229, 0.5); */
-  border: 2px solid rgba(81, 150, 253, 0.50);
+  background: rgba(240, 120, 48, 0.5);   /* @accent #f07830 */
+  border: 2px solid rgba(240, 120, 48, 0.6);
 }
 
 .widget-buttons-grid flowboxchild > button label {
-  font-size: 1.4rem;
-  color: rgba(255, 255, 255, 0.80)
+  font-size: 1.1rem;
+  color: rgba(212, 224, 240, 0.85);   /* @fg */
 }
 
 /* --- FIX: Targeted Padding for Wi-Fi and Hyprsunset Icons --- */
@@ -649,8 +649,8 @@ notificationwindow, blankwindow, blankwindow {
 
 /* Target the first 4 buttons (System Actions) in the grid */
 .widget-buttons-grid flowboxchild:nth-child(-n+4) > button {
-    background: rgba(153, 146, 63, 0.6);
-    border: 2px solid rgba(153, 146, 63, 0.5);
+    background: rgba(58, 82, 112, 0.5);    /* @muted #3a5270 */
+    border: 2px solid rgba(42, 63, 88, 0.5); /* @border #2a3f58 */
 }
 
 /* 1. Add transition to the base state to make the release smooth */
