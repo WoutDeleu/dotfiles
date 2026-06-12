@@ -25,6 +25,10 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
+# GLOBDOTS lets files beginning with a . be matched without explicitly specifying the dot.
+setopt globdots
+
+
 ### Powerlevel10k
 source ~/powerlevel10k/powerlevel10k.zsh-theme
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
