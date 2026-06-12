@@ -10,3 +10,7 @@
 # SSH — track only config, never private keys / known_hosts
 ssh/.ssh/*
 !ssh/.ssh/config
+
+# Google Calendar OAuth client secret — deploy via Ansible Vault
+# real file lives at ~/.config/secrets/waybar-gcal-client_secret.json
+waybar-google-cal/

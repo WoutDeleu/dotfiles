@@ -18,6 +18,7 @@ the one secret that lives only in your head / password manager.
 | 3 | **SSH private key — `id_ed25519`** (+`.pub`) | `~/.ssh/id_ed25519` (`600`) | General / GitHub key | ⬜ vault TODO |
 | 4 | **Git identity & signing** | `~/.gitconfig` (+ signing key if used) | `user.name`, `user.email`, optional GPG/SSH signing key | ⬜ TODO |
 | 5 | **Git remote auth** | credential helper / token | GitHub PAT or SSH (covered by #3) — confirm `gh auth` too | ⬜ TODO |
+| 6 | **waybar-gcal OAuth client secret** | `~/.config/secrets/waybar-gcal-client_secret.json` (`600`) | Google Cloud OAuth desktop client JSON; `WAYBAR_GCAL_CLIENT_SECRET` env var points here (set in `hypr/decoration.conf`). After deploy, run `waybar-gcal auth` to generate token. | ⬜ vault TODO |
 
 ## Notes / gotchas
 
