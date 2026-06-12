@@ -34,6 +34,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | hyprpolkitagent | Polkit authentication agent for Hyprland — handles privilege escalation popups (e.g. sudo GUI prompts) | manual — `pacman -S hyprpolkitagent` |
 | waybar | Status bar for Hyprland | manual — `pacman -S waybar` |
 | btop | Resource monitor (CPU/mem/net/disk) | manual — `pacman -S btop`, default config |
+| ruby | Ruby runtime — required by `get_weather.rb` waybar weather script | manual — `pacman -S ruby` |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -60,7 +61,8 @@ Entries are removed once they have been automated into Ansible or committed as d
 - **Install:** `pacman -S waybar`
 - **Autostart:** `systemctl --user enable --now waybar` (user service)
 - **Config:** in `waybar/` stow package.
-- **Ansible steps:** (1) `pacman -S waybar`, (2) stow `waybar/`, (3) `systemctl --user enable waybar`.
+- **Weather script:** `waybar/.config/waybar/scripts/weather/get_weather.rb` — requires `ruby` (`pacman -S ruby`). Script must be executable: committed to git with `git update-index --chmod=+x`; Ansible should use `file` module with `mode: '0755'`.
+- **Ansible steps:** (1) `pacman -S waybar ruby`, (2) stow `waybar/`, (3) `systemctl --user enable waybar`, (4) ensure `get_weather.rb` is `+x`.
 
 ### Application Launcher (wofi / rofi-wayland)
 <!-- Log: choice made and why, config -->
@@ -325,11 +327,30 @@ Key settings applied:
 
 ## Phase 6 — System Configuration
 
-### Audio (Pipewire)
-<!-- Log: packages, wireplumber config, volume keybindings -->
+### Audio (PipeWire)
+Full PipeWire stack installed — replaces PulseAudio entirely.
+
+| Package | Purpose | Status |
+|---------|---------|--------|
+| `pipewire` | Core audio/video router | installed |
+| `pipewire-audio` | Audio support | installed |
+| `pipewire-alsa` | Routes ALSA apps through PipeWire | installed |
+| `pipewire-pulse` | Drop-in PulseAudio emulation (pavucontrol etc. work via this) | installed |
+| `wireplumber` | Session/policy manager | manual — `pacman -S wireplumber`, `systemctl --user enable --now wireplumber` |
+| `alsa-utils` | CLI tools (`alsamixer`, `aplay`) — useful for debugging | manual — `pacman -S alsa-utils` |
+| `pulsemixer` | TUI mixer — per-app volume + output selection | manual — `pacman -S pulsemixer` |
+
+- `pulseaudio` is **not** installed — correctly replaced by `pipewire-pulse`
+- Use `pulsemixer` for TUI volume/output switching — works via `pipewire-pulse`; bound to waybar audio click
+- Use `wpctl status` / `wpctl set-default <ID>` for CLI output switching
 
 ### Bluetooth
-<!-- Log: packages, fastconnectable config -->
+| Package | Purpose | Status |
+|---------|---------|--------|
+| `bluetui` | TUI Bluetooth client — keyboard-driven, AUR | manual — `yay -S bluetui` |
+
+- `blueman` was tried and uninstalled — using `bluetui` only
+- Enable service: `sudo systemctl enable --now bluetooth`
 
 ### Input Devices
 
@@ -372,7 +393,13 @@ Key settings applied:
 <!-- Log: keybinding setup, wl-clipboard, brightnessctl, etc. -->
 
 ### Networking
-<!-- Log: NetworkManager or iwd setup -->
+| Package | Purpose | Status |
+|---------|---------|--------|
+| `iwd` | Wifi daemon (replaces NetworkManager) | pre-installed |
+| `impala` | TUI wifi manager for iwd — keyboard-driven | manual — `pacman -S impala` |
+
+- `iwd` was already running as the wifi backend — no NetworkManager
+- `impala` added on top as TUI frontend; no service changes needed
 
 ---
 
