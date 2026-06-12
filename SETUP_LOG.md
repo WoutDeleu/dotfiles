@@ -39,6 +39,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | Package | AUR Helper | Purpose | Status |
 |---------|-----------|---------|--------|
 | logiops | yay | Logitech HID++ daemon (`logid`) — remaps MX Master 3 buttons/gestures (see Input Devices) | manual |
+| waybar-google-calendar | yay | Google Calendar module for Waybar — OAuth not yet configured | manual |
 
 ### Services Enabled
 | Service | Command | Status |
@@ -294,9 +295,6 @@ Entries are removed once they have been automated into Ansible or committed as d
 ---
 
 ## Phase 5 — Applications
-
-### Brave Browser
-<!-- Log: install method, sync setup -->
 
 ### Bitwarden
 <!-- Log: install method (flatpak / AUR), setup -->

@@ -8,9 +8,9 @@
   "layer-shell": true,
   "layer-shell-cover-screen": true,
   "cssPriority": "user",
-  "control-center-margin-top": 50,
-  "control-center-margin-bottom": 450,
-  "control-center-margin-right": 14,
+  "control-center-margin-top": 5,
+  "control-center-margin-bottom": 0,
+  "control-center-margin-right": 12,
   "control-center-margin-left": 0,
   "notification-2fa-action": true,
   "notification-inline-replies": false,
@@ -18,12 +18,12 @@
   "notification-body-image-width": 200,
   "timeout": 10,
   "timeout-low": 5,
-  "timeout-critical": 5,
+  "timeout-critical": 0,
   "fit-to-screen": true,
   "relative-timestamps": true,
-  "control-center-width": 400,
+  "control-center-width": 500,
   "control-center-height": 600,
-  "notification-window-width": 370,
+  "notification-window-width": 500,
   "keyboard-shortcuts": true,
   "notification-grouping": true,
   "image-visibility": "when-available",
@@ -34,10 +34,12 @@
   "script-fail-notify": true,
   "scripts": {
     "example-script": {
+      "app-name": "example.app.id",
       "exec": "echo 'Do something...'",
       "urgency": "Normal"
     },
     "example-action-script": {
+      "app-name": "example.app.id",
       "exec": "echo 'Do something actionable!'",
       "urgency": "Normal",
       "run-on": "action"
@@ -46,17 +48,14 @@
   "notification-visibility": {
     "example-name": {
       "state": "muted",
-      "urgency": "Low",
-      "app-name": "Spotify"
+      "urgency": "Normal",
+      "app-name": "example.app.id"
     }
   },
   "widgets": [
-    "dnd",
-    "buttons-grid",
-    "volume",
-    "backlight",
     "inhibitors",
     "title",
+    "dnd",
     "notifications"
   ],
   "widget-config": {
@@ -86,66 +85,15 @@
       "show-album-art": "always",
       "loop-carousel": false
     },
-     "volume": {
-      "label": "󰕾",
-      "show-per-app-icon": true,
-      "show-per-app": true
-    },
-    "backlight": {
-      "label": "󰃠",
-      "device": "intel_backlight",
-      "subsystem": "backlight",
-      "min": 5
-    },
     "buttons-grid": {
-    "buttons-per-row": 4,
-    "actions": [
+      "buttons-per-row": 7,
+      "actions": [
         {
-          "label": "󰍁",
-          "type": "command",
-          "command": "hyprlock"
-        },
-        {
-          "label": "󰗼",
-          "type": "command",
-          "command": "hyprctl dispatch exit"
-        },
-        {
-          "label": "󰜉",
-          "type": "command",
-          "command": "systemctl reboot"
-        },
-        {
-          "label": "󰐥",
-          "type": "command",
-          "command": "systemctl poweroff"
-        },
-
-        {
-          "label": "󰤥",
+          "label": "直",
           "type": "toggle",
           "active": true,
           "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && nmcli radio wifi on || nmcli radio wifi off'",
           "update-command": "sh -c '[[ $(nmcli radio wifi) == \"enabled\" ]] && echo true || echo false'"
-        },
-        {
-          "label": "󰂯",
-          "type": "toggle",
-          "active": true,
-          "command": "sh -c 'if [ \"$SWAYNC_TOGGLE_STATE\" = \"true\" ]; then bluetoothctl power on; else bluetoothctl power off; fi'",
-          "update-command": "bluetoothctl show | grep -q 'Powered: yes' && echo true || echo false"
-        },
-        {
-          "label": "",
-          "type": "toggle",
-          "command": "if [ \"$SWAYNC_TOGGLE_STATE\" = \"true\" ]; then hyprctl dispatch exec 'hyprsunset --temperature 6000'; else pkill -INT hyprsunset; fi",
-          "update-command": "pgrep -x hyprsunset >/dev/null && echo true || echo false"
-        },
-        {
-          "label": "",
-          "type": "toggle",
-          "command": "if [ \"$SWAYNC_TOGGLE_STATE\" = \"true\" ]; then hyprctl dispatch exec hypridle; else pkill -TERM hypridle; fi",
-          "update-command": "pgrep -x hypridle >/dev/null && echo true || echo false"
         }
       ]
     }
