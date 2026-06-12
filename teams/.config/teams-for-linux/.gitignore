@@ -1,0 +1,26 @@
+# Runtime / cache data — do not commit
+Partitions/
+Cache/
+blob_storage/
+Code Cache/
+Crashpad/
+DawnGraphiteCache/
+DawnWebGPUCache/
+Dictionaries/
+GPUCache/
+Session Storage/
+Local Storage/
+Cookies
+Cookies-journal
+DIPS
+DIPS-wal
+Local State
+Network Persistent State
+Preferences
+Shared Dictionary/
+SharedStorage
+SharedStorage-wal
+TransportSecurity
+Trust Tokens
+Trust Tokens-journal
+window-state.json

@@ -302,6 +302,25 @@ Entries are removed once they have been automated into Ansible or committed as d
 ### File Manager
 <!-- Log: choice (thunar / nemo / yazi), config -->
 
+### Microsoft Teams (`teams-for-linux`)
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `teams-for-linux` | AUR (`yay`) | ✅ installed |
+
+**Config:** `~/.config/teams-for-linux/config.json` (stow: `teams`)
+
+Key settings applied:
+- `trayIconEnabled: false` — no tray icon
+- `closeAppOnCross: true` — X button closes the app
+- `appIdleTimeout: 3000` / `appIdleTimeoutCheckInterval: 300` — idle detection tuning
+- `multiAccount.enabled: true` — multi-account support enabled
+- `screenSharing.thumbnail.enabled: true` / `alwaysOnTop: true` — screen sharing thumbnail
+
+**Profile:** one account configured via `settings.json` (stow package includes this file).
+
+**TODO:** further configuration needed — see GitHub ticket for multi-account polish, screen sharing, calls, and Wayland/Hyprland-specific tuning.
+
 ---
 
 ## Phase 6 — System Configuration

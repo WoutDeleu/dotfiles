@@ -1,0 +1,17 @@
+{
+	"trayIconEnabled": false,
+	"closeAppOnCross": true,
+	"appIdleTimeout": 3000,
+	"appIdleTimeoutCheckInterval": 300,
+	"multiAccount": {
+	    "enabled": true
+	},
+	"screenSharing": {
+	  "thumbnail": {
+	    "enabled": true,
+	    "alwaysOnTop": true
+	  }
+	}
+
+
+}

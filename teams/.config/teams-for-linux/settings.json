@@ -1,0 +1,19 @@
+{
+	"app": {
+		"profiles": {
+			"list": [
+				{
+					"id": "9793a754-a6ae-4d76-825f-f05f4e562639",
+					"name": "My account",
+					"partition": "persist:teams-4-linux",
+					"avatarColor": "hsl(349, 65%, 45%)",
+					"avatarInitials": "MA",
+					"disableNotifications": false,
+					"muted": false,
+					"pinned": false
+				}
+			],
+			"activeId": "9793a754-a6ae-4d76-825f-f05f4e562639"
+		}
+	}
+}
