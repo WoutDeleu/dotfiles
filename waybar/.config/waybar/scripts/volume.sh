@@ -33,9 +33,9 @@ icon=$(get_icon "$vol" "$muted")
 bar=$(make_bar "$vol")
 
 if [[ "$muted" == "yes" ]]; then
-    text="<span size='large' color='#6c7086'>${icon}</span><span color='#6c7086'>  ${bar}</span>"
+    text="<span size='large' color='#3a5270'>${icon}</span><span color='#3a5270'>  ${bar}</span>"
 else
-    text="<span size='large'>${icon}</span>  <span color='#cba6f7'>${bar}</span>"
+    text="<span size='large'>${icon}</span>  <span color='#f07830'>${bar}</span>"
 fi
 
 printf '{"text": "%s", "tooltip": "%s%%", "class": "%s"}\n' \

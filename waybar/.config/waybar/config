@@ -145,8 +145,8 @@
         "format": "<span size='large'>{icon}</span>",
         "format-icons": ["󰃞", "󰃟", "󰃠"],
         "tooltip-format": "{percent}%",
-        "on-scroll-up": "brightnessctl set 5%+",
-        "on-scroll-down": "brightnessctl set 5%-"
+        "on-scroll-up": "swayosd-client --brightness raise",
+        "on-scroll-down": "swayosd-client --brightness lower"
     },
 
     "network": {
@@ -176,9 +176,9 @@
         "interval": 2,
         "tooltip": true,
         "on-click": "~/.config/waybar/scripts/toggle-float.sh pulsemixer-float kitty --class pulsemixer-float pulsemixer",
-        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -SIGRTMIN+3 waybar",
-        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -SIGRTMIN+3 waybar",
+        "on-click-right": "swayosd-client --output-volume mute-toggle",
+        "on-scroll-up": "swayosd-client --output-volume raise && pkill -SIGRTMIN+3 waybar",
+        "on-scroll-down": "swayosd-client --output-volume lower && pkill -SIGRTMIN+3 waybar",
         "signal": 3
     },
     "pulseaudio": {
