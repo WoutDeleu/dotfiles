@@ -44,6 +44,8 @@ alias cat="bat --paging=never"
 alias v="nvim"
 alias zshconfig="v ~/dotfiles/zsh/.zshrc"
 alias zshsrc="source ~/.zshrc"
+alias rm='trash-put'
+alias rmf='/usr/bin/rm'
 
 ### Editor
 export EDITOR=nvim
