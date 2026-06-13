@@ -35,6 +35,9 @@ Entries are removed once they have been automated into Ansible or committed as d
 | waybar | Status bar for Hyprland | manual — `pacman -S waybar` |
 | btop | Resource monitor (CPU/mem/net/disk) | manual — `pacman -S btop`, default config |
 | ruby | Ruby runtime — required by `get_weather.rb` waybar weather script | manual — `pacman -S ruby` |
+| trash-cli | Moves files to `~/.local/share/Trash` instead of permanent deletion; used via `rm` alias | manual — `pacman -S trash-cli` |
+| hyprlock | Hyprland-native lock screen — config at `~/.config/hypr/hyprlock.conf` | manual — `pacman -S hyprlock` |
+| hypridle | Hyprland-native idle daemon — triggers lock/sleep/hibernate on inactivity; config at `~/.config/hypr/hypridle.conf` | manual — `pacman -S hypridle` |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -148,7 +151,17 @@ Entries are removed once they have been automated into Ansible or committed as d
 - **Ansible steps:** (1) `pacman -S cliphist`, (2) stow `systemd/`, (3) `systemctl --user enable --now cliphist`, (4) add keybind to dotfiles.
 
 ### Screen Lock
-<!-- Log: tool (swaylock / hyprlock), config -->
+- **Tool:** `hyprlock` (Hyprland-native) + `hypridle` (idle daemon) — `pacman -S hyprlock hypridle`
+- **Autostart:** `exec-once = hypridle` in `hyprland/.config/hypr/hyprland.conf`
+- **hypridle config** (`hyprland/.config/hypr/hypridle.conf`, stow package `hyprland/`):
+  - 5 min idle → `loginctl lock-session` (lock)
+  - 10 min idle → `hyprctl dispatch dpms off` (screen off); resumes on activity
+  - 30 min idle → `systemctl suspend` (sleep)
+  - 60 min idle → `systemctl hibernate`
+  - `before_sleep_cmd = loginctl lock-session` — always locks before sleep/hibernate
+- **hyprlock config** (`hyprland/.config/hypr/hyprlock.conf`): blurred screenshot background, centered password input field
+- **Manual lock:** `loginctl lock-session` (or bind a key in `keybindings.conf`)
+- **Ansible steps:** (1) `pacman -S hyprlock hypridle`, (2) stow `hyprland/` (deploys both configs + `exec-once` line)
 
 ### Notifications (swaync)
 - **Tool:** `swaync` (SwayNotificationCenter) — `pacman -S swaync` (0.12.6).
@@ -216,6 +229,12 @@ Entries are removed once they have been automated into Ansible or committed as d
 
 ### Zsh & Plugins
 <!-- Log: plugin manager, plugins installed, .zshrc customizations -->
+
+#### Safe delete aliases
+- `alias rm='trash-put'` — redirects `rm` to trash instead of permanent delete. Requires `trash-cli` (`pacman -S trash-cli`).
+- `alias rmf='/usr/bin/rm'` — escape hatch for real permanent deletion when needed.
+- Restore files: `trash-restore`; list: `trash-list`; empty bin: `trash-empty`.
+- **Ansible steps:** (1) `pacman -S trash-cli`, (2) aliases are in `zsh/.zshrc` (deployed via stow).
 
 #### Secrets handling
 - **Pattern:** API keys / secrets are kept OUT of the tracked `.zshrc`. Real values live in a
@@ -302,7 +321,25 @@ Entries are removed once they have been automated into Ansible or committed as d
 ## Phase 5 — Applications
 
 ### Bitwarden
-<!-- Log: install method (flatpak / AUR), setup -->
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `bitwarden` | pacman | ✅ installed |
+
+**Ansible steps:** `pacman -S bitwarden`
+
+**Hyprland:** window rule to always open floating + centered (see `windowrules.conf`).
+
+### Browser — Helium (replaces Brave)
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `helium-browser-bin` | AUR (`yay`) | ✅ installed |
+| `brave` | — | ❌ do **not** install on new setups |
+
+**Rationale:** Helium supports installing PWAs (e.g. Google Calendar, Gmail) as standalone app windows. Brave is kept on current machine temporarily but should not be installed on new setups.
+
+**Ansible steps:** `yay -S helium-browser-bin` (do not include `brave` in package list)
 
 ### File Manager
 <!-- Log: choice (thunar / nemo / yazi), config -->
@@ -424,6 +461,48 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 
 ---
 
+### Power Management (Sleep, Hibernate, Lid Behavior)
+
+#### Hibernate prerequisites
+- **Swap partition:** `/dev/nvme0n1p3`, UUID `c585a301-e41a-4237-8108-6bef77ca7d33`, 16G — must be ≥ RAM size
+- **⚠️ Machine-specific:** the swap UUID changes per machine — re-detect with `blkid /dev/nvme0n1pX` on reinstall
+- **`/etc/mkinitcpio.conf`** — added `resume` hook after `udev`, before `filesystems`:
+  ```
+  HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block resume filesystems fsck)
+  ```
+  Rebuild UKI after editing: `sudo mkinitcpio -P`
+- **`/boot/limine.conf`** — added `resume=UUID=<swap-uuid>` to the `cmdline`:
+  ```
+  cmdline: root=PARTUUID=... zswap.enabled=0 rw rootfstype=ext4 resume=UUID=c585a301-e41a-4237-8108-6bef77ca7d33
+  ```
+  ⚠️ Machine-specific — update `resume=UUID=` per machine. `zswap.enabled=0` is intentional (zswap interferes with hibernate).
+
+#### Lid switch behavior
+- **`/etc/systemd/logind.conf`:**
+  ```ini
+  HandleLidSwitch=suspend              # lid close, standalone → sleep
+  HandleLidSwitchExternalPower=ignore  # lid close on AC → do nothing
+  HandleLidSwitchDocked=ignore         # explicitly docked → do nothing
+  ```
+  Apply with: `sudo systemctl restart systemd-logind`
+
+#### Idle-based auto lock/sleep/hibernate
+- Handled by `hypridle` — see Phase 2 Screen Lock section for config details.
+
+#### Recovery (if hibernate fails to resume)
+- Boot normally — system will start fresh if resume fails; no data loss beyond unsaved work
+- If kernel parameter is wrong: boot with Limine, edit `cmdline` at the boot prompt, fix `/boot/limine.conf`
+- If `resume` hook is missing: boot, re-add hook to `/etc/mkinitcpio.conf`, run `sudo mkinitcpio -P`
+
+#### Ansible steps
+1. Edit `/etc/mkinitcpio.conf` — add `resume` hook (Ansible `lineinfile` or template)
+2. Edit `/boot/limine.conf` — add `resume=UUID=` (template with vault variable per machine)
+3. Edit `/etc/systemd/logind.conf` — set lid switch handlers
+4. `sudo systemctl restart systemd-logind`
+5. `sudo mkinitcpio -P` (rebuilds UKI)
+
+---
+
 ## Phase 7 — Recovery & Backup
 
 ### File Transfer from Old System
@@ -458,6 +537,9 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-09 | bat replaces `cat` via `alias cat="bat --paging=never"` | Syntax-highlighted `cat` for interactive use; `--paging=never` keeps it drop-in. Pipes/scripts still hit real `cat`, so nothing breaks |
 | 2026-06-11 | MX Master 3 thumb button = `$mainMod` via logiops (`cid 0xc3` → `Keypress KEY_LEFTALT`) | Mouse buttons can't be Hyprland bind modifiers; logiops holds the mod key while the thumb button is down, so thumb+scroll cycles workspaces through the existing `$mainMod`+scroll bind. Key = `KEY_LEFTALT` to match `$mainMod = ALT`. logiops via AUR, config in `ansible/files/logid.cfg` → `/etc/logid.cfg`, `logid` service enabled |
 | 2026-06-13 | Media keys use `playerctl-smart.sh` instead of plain `playerctl` | `playerctl` picks the wrong player when multiple MPRIS sources are registered (browser wins over music app). Smart script iterates players, picks the one in Playing state first |
+| 2026-06-13 | Switched from Brave to Helium browser | Helium supports PWA installs (Google Calendar, Gmail, etc.) as standalone windows — cleaner than browser tabs. Brave not installed on new setups |
 | 2026-06-13 | Browser MPRIS next/previous not supported | Brave/Firefox register as MPRIS players but only implement play/pause — skip controls silently do nothing. Not a script bug; inherent browser limitation |
 | 2026-06-13 | cava visualizer in waybar — hidden when not playing | `custom/cava` module runs cava with ASCII output; script checks `playerctl status` each frame and emits empty string when nothing is Playing so the bars disappear when music stops |
 | 2026-06-13 | swaync styled to match waybar palette | Consistent navy/orange theme across bar and notification center; reduced sizes (12px radius, 13px font) to feel less bloated |
+| 2026-06-13 | Hibernate via swap partition (`/dev/nvme0n1p3`); zswap disabled | zram (`/dev/zram0`) is compressed RAM-only — not usable for hibernate. Physical swap partition required. `zswap.enabled=0` in kernel cmdline prevents zswap from intercepting swap writes needed for hibernate. `resume=UUID=` in limine.conf + `resume` hook in mkinitcpio wires resume on boot. UUID is machine-specific — must be updated per device |
+| 2026-06-13 | Lid close behavior via `/etc/systemd/logind.conf` — suspend standalone, ignore when docked/AC | Decouples lid behavior from compositor; works regardless of Hyprland state. External screen use case: close lid without suspending. logind change requires service restart (`systemctl restart systemd-logind`) |
