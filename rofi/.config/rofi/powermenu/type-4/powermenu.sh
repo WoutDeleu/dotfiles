@@ -62,6 +62,7 @@ run_cmd() {
 		elif [[ $1 == '--reboot' ]]; then
 			systemctl reboot
 		elif [[ $1 == '--suspend' ]]; then
+			wpctl set-mute @DEFAULT_AUDIO_SINK@ 1
 			systemctl suspend-then-hibernate
 		elif [[ $1 == '--hibernate' ]]; then
 			systemctl hibernate
