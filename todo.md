@@ -31,7 +31,7 @@ Add to `~/.config/hypr/keybindings.conf`:
 - [x] Sleep shortcut → `ALT SHIFT, S → systemctl suspend-then-hibernate`
 - [ ] Check if Lenovo has hardware sleep/power keys and bind `XF86Sleep`, `XF86PowerOff`
 
-## 5. Power Modes (Performance / Balanced / Battery Saver)
+## 5. Power Modes (Performance / Balanced / Battery Saver) → [#134](https://github.com/WoutDeleu/dotfiles/issues/134)
 - [ ] Decide tool: `power-profiles-daemon` (simple, systemd-integrated) vs `tlp` (more control)
   - `power-profiles-daemon`: `pacman -S power-profiles-daemon`, `powerprofilesctl set balanced/performance/power-saver`
   - `tlp`: `pacman -S tlp`, auto-applies on AC/battery switch
