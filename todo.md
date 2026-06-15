@@ -17,13 +17,13 @@ Configure `/etc/systemd/logind.conf`:
 
 ## 3. Power Menu Actions
 Fix `~/.config/rofi/powermenu/type-4/powermenu.sh` — current script has stubs for several actions:
-- [ ] **Lock** → currently calls `betterlockscreen` / `i3lock` — change to `loginctl lock-session`
-- [ ] **Suspend** → currently mutes audio/mpc first — decide if that's wanted, change to `systemctl suspend`
-- [ ] **Hibernate** → not in menu yet — decide if to add it
-- [ ] **Logout** → currently i3/bspwm/openbox only — change to `hyprctl dispatch exit`
-- [ ] **Reboot** → `systemctl reboot` ✓
-- [ ] **Shutdown** → `systemctl poweroff` ✓
-- [ ] Commit fixed script to dotfiles and stow rofi/
+- [x] **Lock** → `loginctl lock-session`
+- [x] **Suspend** → `systemctl suspend-then-hibernate`
+- [x] **Hibernate** → added, `systemctl hibernate`
+- [x] **Logout** → `hyprctl dispatch exit`
+- [x] **Reboot** → `systemctl reboot`
+- [x] **Shutdown** → `systemctl poweroff`
+- [x] Committed to dotfiles
 
 ## 4. Keyboard Shortcuts — Lenovo Laptop
 Add to `~/.config/hypr/keybindings.conf`:
