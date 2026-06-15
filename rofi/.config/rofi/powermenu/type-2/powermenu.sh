@@ -19,13 +19,14 @@ uptime="`uptime -p | sed -e 's/up //g'`"
 host=`hostname`
 
 # Options
-shutdown=''
-reboot=''
-lock=''
-suspend=''
-logout=''
-yes=''
-no=''
+shutdown=''
+reboot=''
+lock=''
+suspend=''
+hibernate='󰤄'
+logout=''
+yes=''
+no=''
 
 # Rofi CMD
 rofi_cmd() {
@@ -55,7 +56,7 @@ confirm_exit() {
 
 # Pass variables to rofi dmenu
 run_rofi() {
-	echo -e "$lock\n$suspend\n$logout\n$reboot\n$shutdown" | rofi_cmd
+	echo -e "$lock\n$suspend\n$hibernate\n$logout\n$reboot\n$shutdown" | rofi_cmd
 }
 
 # Execute Command
@@ -67,19 +68,12 @@ run_cmd() {
 		elif [[ $1 == '--reboot' ]]; then
 			systemctl reboot
 		elif [[ $1 == '--suspend' ]]; then
-			mpc -q pause
-			amixer set Master mute
-			systemctl suspend
+			wpctl set-mute @DEFAULT_AUDIO_SINK@ 1
+			systemctl suspend-then-hibernate
+		elif [[ $1 == '--hibernate' ]]; then
+			systemctl hibernate
 		elif [[ $1 == '--logout' ]]; then
-			if [[ "$DESKTOP_SESSION" == 'openbox' ]]; then
-				openbox --exit
-			elif [[ "$DESKTOP_SESSION" == 'bspwm' ]]; then
-				bspc quit
-			elif [[ "$DESKTOP_SESSION" == 'i3' ]]; then
-				i3-msg exit
-			elif [[ "$DESKTOP_SESSION" == 'plasma' ]]; then
-				qdbus org.kde.ksmserver /KSMServer logout 0 0 0
-			fi
+			hyprctl dispatch exit
 		fi
 	else
 		exit 0
@@ -96,14 +90,13 @@ case ${chosen} in
 		run_cmd --reboot
         ;;
     $lock)
-		if [[ -x '/usr/bin/betterlockscreen' ]]; then
-			betterlockscreen -l
-		elif [[ -x '/usr/bin/i3lock' ]]; then
-			i3lock
-		fi
+		pidof hyprlock || hyprlock
         ;;
     $suspend)
 		run_cmd --suspend
+        ;;
+    $hibernate)
+		run_cmd --hibernate
         ;;
     $logout)
 		run_cmd --logout
