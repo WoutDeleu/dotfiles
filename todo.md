@@ -10,11 +10,9 @@ Configure `~/.config/hypr/hypridle.conf`:
 
 ## 2. Lid Close Behavior
 Configure `/etc/systemd/logind.conf`:
-- [ ] Lid close, **no external monitor** → suspend
-- [ ] Lid close, **external monitor connected** → ignore (keep running)
-  - Note: logind uses `HandleLidSwitchDocked=ignore` for this
-  - Requires `LidSwitchIgnoreInhibited=` decision too
-- [ ] Apply with `sudo systemctl restart systemd-logind`
+- [x] Lid close, **no external monitor** → suspend-then-hibernate (`HandleLidSwitch=suspend-then-hibernate`)
+- [x] Lid close, **external monitor connected** → ignore (`HandleLidSwitchDocked=ignore`, already default)
+- [ ] Deploy: `sudo cp ~/dotfiles/systemd/etc/systemd/logind.conf.d/lid.conf /etc/systemd/logind.conf.d/ && sudo systemctl restart systemd-logind`
 - [ ] Test: close lid with and without DP-1 connected
 
 ## 3. Power Menu Actions
