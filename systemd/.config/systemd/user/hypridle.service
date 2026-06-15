@@ -1,0 +1,11 @@
+[Unit]
+Description=Hypridle idle daemon (AC/battery auto-profile)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/.config/hypr/scripts/start-hypridle.sh
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target
