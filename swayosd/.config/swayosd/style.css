@@ -5,6 +5,7 @@ window {
     border-radius: 12px;
     border: 1px solid #2a3f58;                  /* border */
     padding: 12px 20px;
+    min-width: 244px;                           /* consistent width across all popups */
 }
 
 progressbar,
@@ -26,12 +27,14 @@ progressbar.muted progress {
 }
 
 image {
-    color: #d4e0f0;                             /* fg */
+    color: #f07830;                             /* accent orange */
     margin-right: 12px;
 }
 
-label {
+label,
+label.title-4 {
     color: #d4e0f0;                             /* fg */
     font-family: "JetBrainsMono Nerd Font";
     font-size: 14px;
+    font-weight: normal;
 }
