@@ -471,11 +471,16 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
   HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block resume filesystems fsck)
   ```
   Rebuild UKI after editing: `sudo mkinitcpio -P`
-- **`/boot/limine.conf`** — added `resume=UUID=<swap-uuid>` to the `cmdline`:
+- **`/boot/limine.conf`** — added `resume=UUID=<swap-uuid>` and `acpi_sleep=nobl` to the `cmdline`:
   ```
-  cmdline: root=PARTUUID=... zswap.enabled=0 rw rootfstype=ext4 resume=UUID=c585a301-e41a-4237-8108-6bef77ca7d33
+  cmdline: root=PARTUUID=... zswap.enabled=0 rw rootfstype=ext4 resume=UUID=c585a301-e41a-4237-8108-6bef77ca7d33 acpi_sleep=nobl
   ```
   ⚠️ Machine-specific — update `resume=UUID=` per machine. `zswap.enabled=0` is intentional (zswap interferes with hibernate).
+  - `acpi_sleep=nobl` required on **Lenovo Yoga Slim 7 14ARE05 (AMD, 82A2)** — without it, hibernate resumes fail with `Hibernate inconsistent memory map detected`. This is an AMD/UEFI firmware issue where the memory map changes between boots. May not be needed on other machines.
+
+#### Known hardware quirks — Yoga Slim 7 14ARE05 (82A2, AMD)
+- **No S3 sleep** — Lenovo removed S3 from BIOS; only `s2idle` available (`cat /sys/power/mem_sleep` shows `[s2idle]`). Sleep works but is shallower than S3 (higher idle battery drain).
+- **Hibernate memory map mismatch** — fixed with `acpi_sleep=nobl` kernel parameter.
 
 #### Lid switch behavior
 - **`/etc/systemd/logind.conf`:**
@@ -496,7 +501,7 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 
 #### Ansible steps
 1. Edit `/etc/mkinitcpio.conf` — add `resume` hook (Ansible `lineinfile` or template)
-2. Edit `/boot/limine.conf` — add `resume=UUID=` (template with vault variable per machine)
+2. Edit `/boot/limine.conf` — add `resume=UUID=` + `acpi_sleep=nobl` (template with vault variable per machine; `acpi_sleep=nobl` may be Yoga Slim 7 specific)
 3. Edit `/etc/systemd/logind.conf` — set lid switch handlers
 4. `sudo systemctl restart systemd-logind`
 5. `sudo mkinitcpio -P` (rebuilds UKI)
@@ -542,4 +547,5 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-13 | cava visualizer in waybar — hidden when not playing | `custom/cava` module runs cava with ASCII output; script checks `playerctl status` each frame and emits empty string when nothing is Playing so the bars disappear when music stops |
 | 2026-06-13 | swaync styled to match waybar palette | Consistent navy/orange theme across bar and notification center; reduced sizes (12px radius, 13px font) to feel less bloated |
 | 2026-06-13 | Hibernate via swap partition (`/dev/nvme0n1p3`); zswap disabled | zram (`/dev/zram0`) is compressed RAM-only — not usable for hibernate. Physical swap partition required. `zswap.enabled=0` in kernel cmdline prevents zswap from intercepting swap writes needed for hibernate. `resume=UUID=` in limine.conf + `resume` hook in mkinitcpio wires resume on boot. UUID is machine-specific — must be updated per device |
+| 2026-06-14 | `acpi_sleep=nobl` required for hibernate on Yoga Slim 7 14ARE05 | AMD/UEFI firmware randomizes memory map between boots causing `Hibernate inconsistent memory map detected` — `acpi_sleep=nobl` disables the memory map blacklist check and fixes resume. No S3 sleep available on this model (BIOS removed it); s2idle only |
 | 2026-06-13 | Lid close behavior via `/etc/systemd/logind.conf` — suspend standalone, ignore when docked/AC | Decouples lid behavior from compositor; works regardless of Hyprland state. External screen use case: close lid without suspending. logind change requires service restart (`systemctl restart systemd-logind`) |
