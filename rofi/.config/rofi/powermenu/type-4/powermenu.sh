@@ -84,7 +84,7 @@ case ${chosen} in
 		run_cmd --reboot
         ;;
     $lock)
-		loginctl lock-session
+		pidof hyprlock || hyprlock
         ;;
     $suspend)
 		run_cmd --suspend
