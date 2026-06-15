@@ -18,14 +18,13 @@ uptime="`uptime -p | sed -e 's/up //g'`"
 host=`hostname`
 
 # Options
-shutdown=''
-reboot=''
-lock=''
-suspend=''
-hibernate='󰤄'
-logout=''
-yes=''
-no=''
+shutdown=''
+reboot=''
+lock=''
+suspend=''
+logout=''
+yes=''
+no=''
 
 # Rofi CMD
 rofi_cmd() {
@@ -50,7 +49,7 @@ confirm_exit() {
 
 # Pass variables to rofi dmenu
 run_rofi() {
-	echo -e "$lock\n$suspend\n$hibernate\n$logout\n$reboot\n$shutdown" | rofi_cmd
+	echo -e "$lock\n$suspend\n$logout\n$reboot\n$shutdown" | rofi_cmd
 }
 
 # Execute Command
@@ -64,8 +63,6 @@ run_cmd() {
 		elif [[ $1 == '--suspend' ]]; then
 			wpctl set-mute @DEFAULT_AUDIO_SINK@ 1
 			systemctl suspend-then-hibernate
-		elif [[ $1 == '--hibernate' ]]; then
-			systemctl hibernate
 		elif [[ $1 == '--logout' ]]; then
 			hyprctl dispatch exit
 		fi
@@ -88,9 +85,6 @@ case ${chosen} in
         ;;
     $suspend)
 		run_cmd --suspend
-        ;;
-    $hibernate)
-		run_cmd --hibernate
         ;;
     $logout)
 		run_cmd --logout
