@@ -1,0 +1,7 @@
+[Unit]
+Description=Battery level check — notify on low, hibernate on critical
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/battery-monitor

@@ -1,0 +1,35 @@
+#!/bin/bash
+# Battery monitor — sends notifications at low levels and hibernates at critical.
+# Designed to run as a systemd user service (one-shot, triggered by a timer).
+# Skips all actions when AC is connected.
+
+BATTERY=/sys/class/power_supply/BAT1
+AC=/sys/class/power_supply/ACAD
+
+WARN_THRESHOLD=20
+CRIT_THRESHOLD=10
+HIBERNATE_THRESHOLD=5
+
+# No-op when charging or AC connected
+ac_online=$(cat "$AC/online" 2>/dev/null)
+status=$(cat "$BATTERY/status" 2>/dev/null)
+[[ "$ac_online" == "1" || "$status" == "Charging" || "$status" == "Full" ]] && exit 0
+
+capacity=$(cat "$BATTERY/capacity" 2>/dev/null)
+[[ -z "$capacity" ]] && exit 1
+
+if (( capacity <= HIBERNATE_THRESHOLD )); then
+    notify-send -u critical -i battery-caution "Battery Critical" \
+        "Battery at ${capacity}% — hibernating now." \
+        --hint=int:transient:0
+    sleep 3
+    systemctl hibernate
+
+elif (( capacity <= CRIT_THRESHOLD )); then
+    notify-send -u critical -i battery-caution "Battery Critical" \
+        "Battery at ${capacity}% — plug in now or the system will hibernate soon."
+
+elif (( capacity <= WARN_THRESHOLD )); then
+    notify-send -u normal -i battery-low "Battery Low" \
+        "Battery at ${capacity}% — consider plugging in."
+fi

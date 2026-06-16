@@ -1,0 +1,10 @@
+[Unit]
+Description=Battery monitor — run every 2 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Unit=battery-monitor.service
+
+[Install]
+WantedBy=timers.target
