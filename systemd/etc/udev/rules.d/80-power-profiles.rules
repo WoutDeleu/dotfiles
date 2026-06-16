@@ -1,0 +1,5 @@
+# Auto-switch power profile based on AC adapter state
+# AC plugged in  → balanced
+# AC unplugged   → power-saver
+SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/bin/systemd-run --no-block /usr/bin/powerprofilesctl set balanced"
+SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/bin/systemd-run --no-block /usr/bin/powerprofilesctl set power-saver"

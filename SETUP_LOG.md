@@ -38,6 +38,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | trash-cli | Moves files to `~/.local/share/Trash` instead of permanent deletion; used via `rm` alias | manual — `pacman -S trash-cli` |
 | hyprlock | Hyprland-native lock screen — config at `~/.config/hypr/hyprlock.conf` | manual — `pacman -S hyprlock` |
 | hypridle | Hyprland-native idle daemon — triggers lock/sleep/hibernate on inactivity; config at `~/.config/hypr/hypridle.conf` | manual — `pacman -S hypridle` |
+| power-profiles-daemon | Power profile switching daemon (performance / balanced / power-saver); see Power Profile Management | manual — `pacman -S power-profiles-daemon` |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -55,6 +56,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | waybar | `systemctl --user enable --now waybar` | Status bar — config in `waybar/` stow package |
 | swayosd-server | run as user — `swayosd-server &` or via Hyprland `exec-once` | OSD display daemon |
 | swayosd-libinput-backend | `sudo systemctl enable --now swayosd-libinput-backend` | **system** service — required for brightness control via libinput |
+| power-profiles-daemon | `systemctl enable --now power-profiles-daemon` | **system** service — power profile switching; auto-switched by udev rule on AC state change |
 
 ---
 
@@ -162,6 +164,19 @@ Entries are removed once they have been automated into Ansible or committed as d
 - **hyprlock config** (`hyprland/.config/hypr/hyprlock.conf`): blurred screenshot background, centered password input field
 - **Manual lock:** `loginctl lock-session` (or bind a key in `keybindings.conf`)
 - **Ansible steps:** (1) `pacman -S hyprlock hypridle`, (2) stow `hyprland/` (deploys both configs + `exec-once` line)
+
+### Power Profile Management
+- **Daemon:** `power-profiles-daemon` — `pacman -S power-profiles-daemon`; enable: `systemctl enable --now power-profiles-daemon`.
+- **Profiles:** `performance`, `balanced` (default), `power-saver`. Switch with `powerprofilesctl set <profile>`.
+- **Auto-switching (udev rule):** `systemd/etc/udev/rules.d/80-power-profiles.rules` (stow package `systemd/`).
+  - AC plugged in (`ACAD` online=1) → `balanced`
+  - AC unplugged (`ACAD` online=0) → `power-saver`
+  - Uses `systemd-run --no-block` so `powerprofilesctl` can reach the system D-Bus from udev context.
+  - **Machine-specific:** AC adapter kernel name is `ACAD` on this laptop — verify with `ls /sys/class/power_supply/` on a different machine.
+  - Deploy: `sudo cp ... /etc/udev/rules.d/80-power-profiles.rules && sudo udevadm control --reload-rules`
+- **Waybar module:** built-in `power-profiles-daemon` module — added to `group/indicators` in `waybar/` stow package. Click cycles through profiles. Icons: `󱐋` performance, `󰗑` balanced, `󰌪` power-saver.
+- **Ansible steps:** (1) `pacman -S power-profiles-daemon`, (2) `systemctl enable power-profiles-daemon`, (3) deploy udev rule from `ansible/files/` or via stow, (4) stow `waybar/`.
+
 
 ### Notifications (swaync)
 - **Tool:** `swaync` (SwayNotificationCenter) — `pacman -S swaync` (0.12.6).

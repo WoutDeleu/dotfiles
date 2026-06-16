@@ -53,7 +53,7 @@
 
     "group/indicators": {
         "orientation": "horizontal",
-        "modules": ["network", "bluetooth", "backlight", "battery"]
+        "modules": ["network", "bluetooth", "backlight", "power-profiles-daemon", "battery"]
     },
 
     "group/volume": {
@@ -253,5 +253,16 @@
         "format": "⏻",
         "tooltip": false,
         "on-click": "~/.config/rofi/powermenu/type-2/powermenu.sh"
+    },
+
+    "power-profiles-daemon": {
+        "format": "{icon}",
+        "tooltip-format": "Power Profile: {profile}\nDriver: {driver}",
+        "format-icons": {
+            "default":      "󰗑",
+            "performance":  "󱐋",
+            "balanced":     "󰗑",
+            "power-saver":  "󰌪"
+        }
     }
 }
