@@ -231,8 +231,9 @@
             "charging": ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"]
 	},
         "states": {
-            "warning": 30,
-            "critical": 15
+            "warning": 25,
+            "critical": 15,
+            "hibernate": 5
         },
         "tooltip": true,
         "tooltip-format": "{capacity}%\n{timeTo}\n{power}W"

@@ -264,11 +264,21 @@ highlight#wireplumber-slider {
 }
 
 #battery.warning {
-    color: @warning;
+    color: @bg;
+    background-color: @warning;
+    border-radius: 8px;
 }
 
 #battery.critical {
-    color: @critical;
+    color: @bg;
+    background-color: @accent;
+    border-radius: 8px;
+}
+
+#battery.hibernate {
+    color: @bg;
+    background-color: @critical;
+    border-radius: 8px;
     animation: blink 1s step-end infinite;
 }
 
