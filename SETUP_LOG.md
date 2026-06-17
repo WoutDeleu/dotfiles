@@ -39,6 +39,14 @@ Entries are removed once they have been automated into Ansible or committed as d
 | hyprlock | Hyprland-native lock screen — config at `~/.config/hypr/hyprlock.conf` | manual — `pacman -S hyprlock` |
 | hypridle | Hyprland-native idle daemon — triggers lock/sleep/hibernate on inactivity; config at `~/.config/hypr/hypridle.conf` | manual — `pacman -S hypridle` |
 | power-profiles-daemon | Power profile switching daemon (performance / balanced / power-saver); see Power Profile Management | manual — `pacman -S power-profiles-daemon` |
+| vlc | Media player with broad codec support | manual — `pacman -S vlc` |
+| onlyoffice-bin | Office suite (Writer/Calc/Impress) | manual — `pacman -S onlyoffice-bin` |
+| zathura | Minimal PDF/document viewer | manual — `pacman -S zathura zathura-pdf-mupdf` |
+| wlsunset | Blue light filter — time-based warm/cool color temperature; schedule 21:30–06:30; systemd user service in `systemd/` stow package | manual — `pacman -S wlsunset` |
+| yt-dlp | YouTube/streaming site downloader — used as mpv backend for terminal streaming | manual — `pacman -S yt-dlp` |
+| mpv-mpris | MPRIS plugin for mpv — exposes playerctl control over mpv playback; without this `playerctl` cannot see mpv | manual — `pacman -S mpv-mpris` |
+| plymouth | Boot splash screen | manual — `pacman -S plymouth` |
+| dmidecode | DMI/SMBIOS hardware info tool | manual — `pacman -S dmidecode` |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -46,6 +54,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | logiops | yay | Logitech HID++ daemon (`logid`) — remaps MX Master 3 buttons/gestures (see Input Devices) | manual |
 | ycal | yay | Google Calendar module for Waybar — client secret at `~/.config/waybar-ycal/client_secret.json` (gitignored, via stow), OAuth not yet configured | manual |
 | swayosd-git | yay | Wayland OSD for volume/brightness — shows overlay bar on key/scroll change | manual — `yay -S swayosd-git` |
+| spotify-player | yay | Terminal Spotify client with TUI | manual — `yay -S spotify-player` |
 
 ### Services Enabled
 | Service | Command | Status |
@@ -56,7 +65,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | waybar | `systemctl --user enable --now waybar` | Status bar — config in `waybar/` stow package |
 | swayosd-server | run as user — `swayosd-server &` or via Hyprland `exec-once` | OSD display daemon |
 | swayosd-libinput-backend | `sudo systemctl enable --now swayosd-libinput-backend` | **system** service — required for brightness control via libinput |
-| power-profiles-daemon | `systemctl enable --now power-profiles-daemon` | **system** service — power profile switching; auto-switched by udev rule on AC state change |
+| wlsunset | `systemctl --user enable --now wlsunset` | Blue light filter — warm 3500K at 21:30, cool 6500K at 06:30 |
 
 ---
 
@@ -378,6 +387,73 @@ Key settings applied:
 
 **TODO:** further configuration needed — see GitHub ticket for multi-account polish, screen sharing, calls, and Wayland/Hyprland-specific tuning.
 
+### Office Suite — OnlyOffice (replaces OpenOffice)
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `onlyoffice-bin` | AUR (`yay`) | ✅ installed |
+| `openoffice-bin` | — | ❌ do **not** install on new setups |
+
+**Rationale:** Replaced OpenOffice with OnlyOffice — preferred UI.
+
+**Ansible steps:** `yay -S onlyoffice-bin` (do not include `openoffice-bin` in package list)
+
+### Email — aerc (Gmail via IMAP)
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `aerc` | pacman | ✅ installed |
+
+**Config:** `~/.config/aerc/` — stow package `aerc/`
+- `aerc.conf` + `binds.conf` → stowed (symlinked)
+- `accounts.conf` → **not stowed** (references secrets; machine-local)
+- `gmail.gpg` → **not stowed** (encrypted secret; machine-local)
+- `accounts.conf.example` → stowed (safe template, no secrets)
+
+**Gmail setup:**
+- Uses IMAP/SMTPS (TLS encrypted in transit)
+- Auth via **Gmail App Password** (not regular password — Google blocks plain passwords for IMAP)
+  - Generate at: [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) (requires 2FA)
+  - Remove spaces from the 16-char password before use
+- App password stored **GPG-encrypted** at `~/.config/aerc/gmail.gpg` (never plaintext on disk)
+
+**GPG key setup** (run once on new machine):
+```bash
+gpg --batch --gen-key <<EOF
+%no-protection
+Key-Type: EdDSA
+Key-Curve: ed25519
+Subkey-Type: ECDH
+Subkey-Curve: cv25519
+Name-Real: Wout Deleu
+Name-Email: wout.deleu@gmail.com
+Expire-Date: 0
+%commit
+EOF
+
+# Encrypt the app password (replace APP_PASSWORD with actual value from vault/secret)
+echo -n "APP_PASSWORD" | gpg --encrypt -r wout.deleu@gmail.com --output ~/.config/aerc/gmail.gpg
+```
+
+**accounts.conf:**
+```ini
+[Personal]
+source            = imaps://wout.deleu%40gmail.com@imap.gmail.com:993
+outgoing          = smtps://wout.deleu%40gmail.com@smtp.gmail.com:465
+source-cred-cmd   = gpg --quiet --decrypt ~/.config/aerc/gmail.gpg
+outgoing-cred-cmd = gpg --quiet --decrypt ~/.config/aerc/gmail.gpg
+default           = INBOX
+from              = Wout Deleu <wout.deleu@gmail.com>
+cache-headers     = true
+```
+
+**Ansible steps:**
+1. `pacman -S aerc`
+2. `cd ~/dotfiles && stow aerc` (links `aerc.conf`, `binds.conf`, `accounts.conf.example`)
+3. Create GPG key (batch, no passphrase)
+4. Retrieve app password from Ansible Vault, encrypt with GPG → `~/.config/aerc/gmail.gpg`
+5. Deploy `accounts.conf` from template (fill in email; password stays GPG-encrypted)
+
 ---
 
 ## Phase 6 — System Configuration
@@ -564,3 +640,4 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-13 | Hibernate via swap partition (`/dev/nvme0n1p3`); zswap disabled | zram (`/dev/zram0`) is compressed RAM-only — not usable for hibernate. Physical swap partition required. `zswap.enabled=0` in kernel cmdline prevents zswap from intercepting swap writes needed for hibernate. `resume=UUID=` in limine.conf + `resume` hook in mkinitcpio wires resume on boot. UUID is machine-specific — must be updated per device |
 | 2026-06-14 | `acpi_sleep=nobl` required for hibernate on Yoga Slim 7 14ARE05 | AMD/UEFI firmware randomizes memory map between boots causing `Hibernate inconsistent memory map detected` — `acpi_sleep=nobl` disables the memory map blacklist check and fixes resume. No S3 sleep available on this model (BIOS removed it); s2idle only |
 | 2026-06-13 | Lid close behavior via `/etc/systemd/logind.conf` — suspend standalone, ignore when docked/AC | Decouples lid behavior from compositor; works regardless of Hyprland state. External screen use case: close lid without suspending. logind change requires service restart (`systemctl restart systemd-logind`) |
+| 2026-06-17 | aerc email client — Gmail via IMAP with GPG-encrypted app password | Google blocks plain IMAP passwords; App Password required (2FA must be on). Password stored GPG-encrypted at `~/.config/aerc/gmail.gpg` — never plaintext on disk. GPG key: ed25519/cv25519, no passphrase. accounts.conf uses `source-cred-cmd`/`outgoing-cred-cmd` to decrypt at runtime. On new machine: generate GPG key, retrieve app password from Ansible Vault, re-encrypt |

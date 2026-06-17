@@ -19,6 +19,7 @@ the one secret that lives only in your head / password manager.
 | 4 | **Git identity & signing** | `~/.gitconfig` (+ signing key if used) | `user.name`, `user.email`, optional GPG/SSH signing key | ⬜ TODO |
 | 5 | **Git remote auth** | credential helper / token | GitHub PAT or SSH (covered by #3) — confirm `gh auth` too | ⬜ TODO |
 | 6 | **ycal OAuth client secret** | `~/.config/waybar-ycal/client_secret.json` (`600`) | Google Cloud OAuth desktop client JSON; tracked in `waybar/` stow package but gitignored. After deploy, run ycal auth to generate token. | ⬜ vault TODO |
+| 7 | **Gmail App Password** | encrypted via GPG → `~/.config/aerc/gmail.gpg` | 16-char app password from [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords). On restore: generate GPG key, decrypt from vault, re-encrypt with GPG. See aerc setup in SETUP_LOG.md Phase 5. | ⬜ vault TODO |
 
 ## Notes / gotchas
 
