@@ -1,0 +1,3 @@
+# Never stow accounts.conf or gmail.gpg — both contain or reference secrets
+accounts.conf
+gmail.gpg

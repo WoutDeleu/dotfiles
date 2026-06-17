@@ -1,0 +1,11 @@
+# Copy this to ~/.config/aerc/accounts.conf and fill in your details.
+# The app password must be GPG-encrypted — see SETUP_LOG.md for instructions.
+
+[Personal]
+source            = imaps://your.email%40gmail.com@imap.gmail.com:993
+outgoing          = smtps://your.email%40gmail.com@smtp.gmail.com:465
+source-cred-cmd   = gpg --quiet --decrypt ~/.config/aerc/gmail.gpg
+outgoing-cred-cmd = gpg --quiet --decrypt ~/.config/aerc/gmail.gpg
+default           = INBOX
+from              = Your Name <your.email@gmail.com>
+cache-headers     = true
