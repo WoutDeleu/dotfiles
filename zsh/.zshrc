@@ -46,6 +46,7 @@ alias zshconfig="v ~/dotfiles/zsh/.zshrc"
 alias zshsrc="source ~/.zshrc"
 alias rm='trash-put'
 alias rmf='/usr/bin/rm'
+alias spotify='spotify_player'
 
 ### Editor
 export EDITOR=nvim
@@ -63,3 +64,7 @@ for _secret in "$HOME"/.config/secrets/*.zsh(N); do source "$_secret"; done
 unset _secret
 ### Terminal/tab title hooks (working dir when idle, command when running)
 src "$HOME/.config/zsh/tab_title.zsh"
+
+please() { sudo $(fc -ln -1) }
+
+
