@@ -17,6 +17,7 @@ ZSH_THEME=""
 
 # Plugins MUST be set before sourcing oh-my-zsh.sh.
 # syntax-highlighting must come last; autosuggestions just before it.
+eval "$(~/.local/bin/mise activate zsh)"
 plugins=(
   git
   zsh-autosuggestions
@@ -66,5 +67,4 @@ unset _secret
 src "$HOME/.config/zsh/tab_title.zsh"
 
 please() { sudo $(fc -ln -1) }
-
 

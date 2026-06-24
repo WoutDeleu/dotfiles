@@ -346,10 +346,23 @@ yay -S nvim-packer-git
 <!-- Log: install method, config -->
 
 ### Language Toolchains
-| Language | Tool | Install Method | Status |
-|----------|------|---------------|--------|
-| Python | pyenv / uv | | manual |
-| Java | sdkman / pacman | | manual |
+
+**Tool:** [mise](https://mise.jdx.dev/) — single multi-language version manager (replaces sdkman, pyenv)
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `mise` | `curl https://mise.run \| sh` | ✅ installed |
+
+- Shell hook added to `~/.zshrc`: `eval "$(~/.local/bin/mise activate zsh)"`
+- Global versions stored in `~/.config/mise/config.toml` (stow package: `mise/`)
+- Per-project versions via `.mise.toml` in project root
+- **Ansible steps:** (1) install via curl installer, (2) stow `mise/`, (3) `mise install` to pull toolchains
+
+| Language | Tool managed by mise | Global version |
+|----------|---------------------|---------------|
+| Python | `mise use --global python@x.y` | 3.14.6 |
+| Java | `mise use --global java@temurin-x` | temurin-25.0.3 |
+| Maven | `mise use --global maven@x.y.z` | 3.9.16 |
 
 ---
 
