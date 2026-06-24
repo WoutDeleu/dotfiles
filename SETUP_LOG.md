@@ -314,7 +314,18 @@ Entries are removed once they have been automated into Ansible or committed as d
 | lazygit | Terminal UI for git | manual — `pacman -S lazygit`, no custom config (defaults) |
 
 ### Neovim
-<!-- Log: config approach (kickstart / own), plugins -->
+
+#### Plugin Manager — packer.nvim
+
+| Package | AUR Helper | Status |
+|---------|-----------|--------|
+| `nvim-packer-git` | yay | ✅ installed |
+
+```bash
+yay -S nvim-packer-git
+```
+
+**Note:** `nvim-packer-git` installs packer into the Neovim data path (`~/.local/share/nvim/site/pack/packer`). On a clean install, run `yay -S nvim-packer-git` before launching Neovim, then open nvim and run `:PackerSync` to install declared plugins.
 
 ### Git
 <!-- Log: global config, credential helper, SSH key setup -->
