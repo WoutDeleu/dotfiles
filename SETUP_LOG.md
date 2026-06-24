@@ -454,6 +454,27 @@ cache-headers     = true
 4. Retrieve app password from Ansible Vault, encrypt with GPG → `~/.config/aerc/gmail.gpg`
 5. Deploy `accounts.conf` from template (fill in email; password stays GPG-encrypted)
 
+### Stremio
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `flatpak` | pacman | ✅ installed |
+| `com.stremio.Stremio` | Flatpak (Flathub) | ✅ installed |
+
+**Rationale:** No working pacman or AUR package found for Stremio — Flatpak was the only viable option.
+
+**Setup steps:**
+```bash
+pacman -S flatpak
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install flathub com.stremio.Stremio
+```
+
+**Ansible steps:**
+1. `pacman -S flatpak`
+2. Add Flathub remote: `flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo`
+3. `flatpak install -y flathub com.stremio.Stremio`
+
 ---
 
 ## Phase 6 — System Configuration
@@ -574,13 +595,19 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 - **Hibernate memory map mismatch** — fixed with `acpi_sleep=nobl` kernel parameter.
 
 #### Lid switch behavior
-- **`/etc/systemd/logind.conf`:**
+- **`/etc/systemd/logind.conf.d/lid.conf`** (drop-in, preferred over editing base file):
   ```ini
-  HandleLidSwitch=suspend              # lid close, standalone → sleep
-  HandleLidSwitchExternalPower=ignore  # lid close on AC → do nothing
-  HandleLidSwitchDocked=ignore         # explicitly docked → do nothing
+  HandleLidSwitch=suspend-then-hibernate              # lid close, standalone → suspend first, then hibernate
+  HandleLidSwitchExternalPower=suspend-then-hibernate # lid close on AC, no external monitor → same
+  HandleLidSwitchDocked=ignore                        # external monitor connected → logind does nothing, Hyprland takes over
   ```
   Apply with: `sudo systemctl restart systemd-logind`
+- **Hyprland `keybindings.conf`** — disables internal display when lid is closed while docked:
+  ```ini
+  bindl = , switch:on:Lid Switch,  exec, hyprctl keyword monitor eDP-1,disable
+  bindl = , switch:off:Lid Switch, exec, hyprctl keyword monitor eDP-1,1920x1080,auto,1,bitdepth,8
+  ```
+  `switch:on` = lid closed, `switch:off` = lid opened. When undocked, logind suspends before display disable is visible; on resume, lid-open re-enables `eDP-1`.
 
 #### Idle-based auto lock/sleep/hibernate
 - Handled by `hypridle` — see Phase 2 Screen Lock section for config details.
@@ -639,5 +666,5 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-13 | swaync styled to match waybar palette | Consistent navy/orange theme across bar and notification center; reduced sizes (12px radius, 13px font) to feel less bloated |
 | 2026-06-13 | Hibernate via swap partition (`/dev/nvme0n1p3`); zswap disabled | zram (`/dev/zram0`) is compressed RAM-only — not usable for hibernate. Physical swap partition required. `zswap.enabled=0` in kernel cmdline prevents zswap from intercepting swap writes needed for hibernate. `resume=UUID=` in limine.conf + `resume` hook in mkinitcpio wires resume on boot. UUID is machine-specific — must be updated per device |
 | 2026-06-14 | `acpi_sleep=nobl` required for hibernate on Yoga Slim 7 14ARE05 | AMD/UEFI firmware randomizes memory map between boots causing `Hibernate inconsistent memory map detected` — `acpi_sleep=nobl` disables the memory map blacklist check and fixes resume. No S3 sleep available on this model (BIOS removed it); s2idle only |
-| 2026-06-13 | Lid close behavior via `/etc/systemd/logind.conf` — suspend standalone, ignore when docked/AC | Decouples lid behavior from compositor; works regardless of Hyprland state. External screen use case: close lid without suspending. logind change requires service restart (`systemctl restart systemd-logind`) |
+| 2026-06-20 | Lid close behavior via `/etc/systemd/logind.conf.d/lid.conf` + Hyprland `bindl` — suspend-then-hibernate when undocked, disable `eDP-1` when docked | logind handles sleep/hibernate (can't be done in Hyprland); Hyprland handles display disable when docked. `HandleLidSwitchDocked=ignore` keeps logind out of the way. `switch:off` re-enables `eDP-1` on lid open. |
 | 2026-06-17 | aerc email client — Gmail via IMAP with GPG-encrypted app password | Google blocks plain IMAP passwords; App Password required (2FA must be on). Password stored GPG-encrypted at `~/.config/aerc/gmail.gpg` — never plaintext on disk. GPG key: ed25519/cv25519, no passphrase. accounts.conf uses `source-cred-cmd`/`outgoing-cred-cmd` to decrypt at runtime. On new machine: generate GPG key, retrieve app password from Ansible Vault, re-encrypt |
