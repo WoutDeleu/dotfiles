@@ -3,7 +3,7 @@
 # Toggles a floating terminal window — kills it if running, launches it if not.
 # Only one float window can be open at a time — others are closed on launch.
 
-FLOAT_CLASSES=("btop-float" "pulsemixer-float" "impala-float" "bluetui-float")
+FLOAT_CLASSES=("btop-float" "pulsemixer-float" "impala-float" "bluetui-float", "tsui-float")
 
 CLASS="$1"
 shift

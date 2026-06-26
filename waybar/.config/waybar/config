@@ -53,7 +53,7 @@
 
     "group/indicators": {
         "orientation": "horizontal",
-        "modules": ["network", "bluetooth", "backlight", "power-profiles-daemon", "battery"]
+        "modules": ["custom/ts", "network", "bluetooth", "backlight", "power-profiles-daemon", "battery"]
     },
 
     "group/volume": {
@@ -244,8 +244,21 @@
         "interval": "once",
         "signal": 1,
         "return-type": "json",
-        "on-click": "~/.config/waybar/scripts/popup.sh swaync",
+        "on-click": "btop-float kitty --class btop-float btop",
         "on-click-right": "swaync-client -d"
+    },
+
+    "custom/ts": {
+        "exec": "~/.config/waybar/scripts/tailscale.sh --status 'ipv4'",
+        "interval": 1,
+        "format": "{icon}",
+        "format-icons": {
+            "connected": " 󱠾 󰕥 ",
+            "stopped": " 󱠾  "
+        },
+        "return-type": "json",
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh tsui-float kitty --class tsui-float tsui",
+        "on-click-right": "exec ~/.config/waybar/scripts/tailscale.sh --toggle"
     },
 
     // ── Shared ────────────────────────────────────────────────────────────────
