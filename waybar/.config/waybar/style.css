@@ -85,13 +85,21 @@ window#waybar {
 #workspaces button {
     color: @muted;
     background: transparent;
+    border: 1px solid transparent;
     border-radius: 10px;
     margin: 3px 1px;
     padding: 0 11px;
     font-size: 18px;
     min-width: 0;
     min-height: 30px;
-    transition: all 0.2s ease;
+    box-shadow: none;
+    outline: none;
+}
+
+#workspaces,
+#workspaces button,
+#workspaces button * {
+    transition: none;
 }
 
 #workspaces button.active {
@@ -112,8 +120,11 @@ window#waybar {
 }
 
 #workspaces button:hover:not(.active) {
-    color: @fg;
-    background: @bg-hover;
+    color: @accent;
+    background: transparent;
+    border: 1px solid @accent;
+    box-shadow: none;
+    outline: none;
 }
 
 /* ── Left modules ────────────────────────────────────────────────────────── */
