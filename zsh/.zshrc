@@ -48,6 +48,7 @@ alias zshsrc="source ~/.zshrc"
 alias rm='trash-put'
 alias rmf='/usr/bin/rm'
 alias spotify='spotify_player'
+alias dotfiles='cd ~/dotfiles/'
 
 ### Editor
 export EDITOR=nvim
