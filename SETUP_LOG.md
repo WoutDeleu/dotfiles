@@ -337,10 +337,16 @@ yay -S nvim-packer-git
 - **Keys are NEVER tracked:** repo-root `.gitignore` has `ssh/.ssh/*` + `!ssh/.ssh/config`, so only
   `config` can ever be committed — private keys / `known_hosts` are excluded even if copied in.
 - **Current keys (machine-local, mode `600`):** `~/.ssh/arrakis` (+`.pub`) for host `arrakis`,
+  `~/.ssh/tailscale` (+`.pub`) for the Tailscale homelab/VPS host (root@192.168.129.34),
   `~/.ssh/id_ed25519` (+`.pub`). These must be restored from the encrypted backup (see Ansible
   Secrets Checklist) on a clean install.
+- **`tailscale` SSH host:** alias for the Tailscale IP of the homelab/VPS (`192.168.129.34`, user
+  `root`). The `tailscale` package itself is **not yet automated** — must be installed (`pacman -S
+  tailscale`) and `tailscaled` enabled/started (`systemctl enable --now tailscaled`), then
+  authenticated (`tailscale up`) manually on a new machine until an Ansible task is added.
 - **Ansible steps:** (1) `stow ssh` to deploy `~/.ssh/config`; (2) vault-decrypt the private keys
-  into `~/.ssh/` with mode `0600` (dir `0700`).
+  into `~/.ssh/` with mode `0600` (dir `0700`); (3) TODO: add `tailscale` package + service to
+  Ansible (see open task).
 
 ### Claude Code
 <!-- Log: install method, config -->
@@ -565,6 +571,19 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 - **Ansible steps:** (1) `yay -S logiops`, (2) copy `ansible/files/logid.cfg` → `/etc/logid.cfg`,
   (3) `systemctl enable --now logid`.
 
+#### SwayOSD caps-lock indicator suppression
+- **Symptom:** caps lock kept showing a popup even though caps is rebound to escape (`caps:escape`).
+- **Root cause:** `swayosd-libinput-backend` is a **system** service running as **root**, so it reads
+  `/etc/xdg/swayosd/backend.toml` — **NOT** the user `~/.config/swayosd/backend.toml` (the `swayosd/`
+  stow package). The user config's `ignore_caps_lock_key = true` was silently ignored.
+- **Fix:** set `ignore_caps_lock_key = true` in the **root-owned** `/etc/xdg/swayosd/backend.toml`, then
+  `sudo systemctl restart swayosd-libinput-backend.service`.
+- **Note:** there is intentionally **no** user-level `~/.config/swayosd/backend.toml` — the libinput
+  backend ignores it, so it was removed to avoid confusion. Only `style.css` stays in the `swayosd/`
+  stow package (user-level, fine).
+- **Ansible steps:** deploy `backend.toml` to `/etc/xdg/swayosd/backend.toml` as a root-owned file (same
+  pattern as `logid.cfg` → `/etc/logid.cfg`, NOT a stow dotfile), then restart the backend service.
+
 ### Fn Keys / Media Controls
 - **Media keys** (`XF86AudioPlay/Pause/Next/Prev`) bound in `hyprland/.config/hypr/keybindings.conf` via `playerctl-smart.sh`
 - **playerctl:** `pacman -S playerctl` — MPRIS controller used for all media key actions
@@ -692,3 +711,4 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-14 | `acpi_sleep=nobl` required for hibernate on Yoga Slim 7 14ARE05 | AMD/UEFI firmware randomizes memory map between boots causing `Hibernate inconsistent memory map detected` — `acpi_sleep=nobl` disables the memory map blacklist check and fixes resume. No S3 sleep available on this model (BIOS removed it); s2idle only |
 | 2026-06-20 | Lid close behavior via `/etc/systemd/logind.conf.d/lid.conf` + Hyprland `bindl` — suspend-then-hibernate when undocked, disable `eDP-1` when docked | logind handles sleep/hibernate (can't be done in Hyprland); Hyprland handles display disable when docked. `HandleLidSwitchDocked=ignore` keeps logind out of the way. `switch:off` re-enables `eDP-1` on lid open. |
 | 2026-06-17 | aerc email client — Gmail via IMAP with GPG-encrypted app password | Google blocks plain IMAP passwords; App Password required (2FA must be on). Password stored GPG-encrypted at `~/.config/aerc/gmail.gpg` — never plaintext on disk. GPG key: ed25519/cv25519, no passphrase. accounts.conf uses `source-cred-cmd`/`outgoing-cred-cmd` to decrypt at runtime. On new machine: generate GPG key, retrieve app password from Ansible Vault, re-encrypt |
+| 2026-06-27 | SwayOSD caps-lock suppression must live in `/etc/xdg/swayosd/backend.toml` (root), not the user stow config | `swayosd-libinput-backend` runs as a **system** (root) service, so it reads `/etc/xdg/swayosd/backend.toml` and ignores `~/.config/swayosd/backend.toml`. `ignore_caps_lock_key = true` had to be set in the root file (then restart the backend) to stop the caps-lock popup. Ansible must deploy this as a root-owned file like `logid.cfg`, not a stow dotfile |
