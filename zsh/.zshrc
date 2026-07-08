@@ -49,6 +49,7 @@ alias rm='trash-put'
 alias rmf='/usr/bin/rm'
 alias spotify='spotify_player'
 alias dotfiles='cd ~/dotfiles/'
+alias ssh="kitty +kitten ssh"
 
 ### Editor
 export EDITOR=nvim

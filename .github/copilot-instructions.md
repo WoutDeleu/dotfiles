@@ -117,7 +117,7 @@ Key rules:
 - **Title**: clear and concise — the main assignment in a few words
 - **Description**: brief and structured. Use bullet points, checklists (`- [ ]`), and headers where they help. Enough context to know what to do — not a full spec.
 - **Every task must have a parent Epic** — link after creation
-- **No labels**
+- **Labels**: apply exactly one of `Essentials` (core/required feature) or `Future Enhancements` (idea for later) to each task
 - New issues are auto-added to the board as Todo via GitHub Action (`.github/workflows/auto-add-to-project.yml`), requires `ADD_TO_PROJECT_PAT` secret
 
 Current Epics: #96 Desktop Environment, #97 Development Environment, #98 Applications, #99 System Infrastructure
