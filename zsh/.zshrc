@@ -62,6 +62,9 @@ command -v fzf >/dev/null && source <(fzf --zsh)
 ### Claude Code
 src "$HOME/.config/zsh/claude-code.zsh"
 
+### AUR builds — force system Python (not mise) so yay/makepkg don't fail
+src "$HOME/.config/zsh/mise-aur.zsh"
+
 ### Secrets — machine-local, never tracked (folder: ~/.config/secrets/*.zsh)
 for _secret in "$HOME"/.config/secrets/*.zsh(N); do source "$_secret"; done
 unset _secret
