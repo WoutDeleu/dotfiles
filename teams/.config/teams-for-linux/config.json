@@ -1,4 +1,6 @@
 {
+	"followSystemTheme": false,
+	"customCSSLocation": "/home/woutd/.config/teams-for-linux/compactDark.css",
 	"trayIconEnabled": false,
 	"closeAppOnCross": true,
 	"appIdleTimeout": 3000,
