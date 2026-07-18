@@ -312,6 +312,15 @@ Entries are removed once they have been automated into Ansible or committed as d
 | Package | Purpose | Status |
 |---------|---------|--------|
 | lazygit | Terminal UI for git | manual — `pacman -S lazygit`, no custom config (defaults) |
+| docker | Container runtime (daemon + CLI) | manual — `pacman -S docker`; see Docker |
+| docker-compose | Multi-container orchestration (`docker compose`) | manual — `pacman -S docker-compose` |
+| lazydocker | Terminal UI for Docker/compose | manual — `pacman -S lazydocker`, no custom config (defaults) |
+
+### Docker
+- **Install:** `pacman -S docker docker-compose lazydocker` (all official repos).
+- **Service:** `sudo systemctl enable --now docker` — daemon enabled on boot.
+- **User group:** `sudo usermod -aG docker $USER` — run docker without sudo. **Requires re-login** to take effect. Easy to forget on a clean install — docker commands fail with a permission error until then.
+- **Ansible steps:** (1) `pacman -S docker docker-compose lazydocker`, (2) `service`/`systemd` module enable + start `docker`, (3) `user` module add to `docker` group.
 
 ### Neovim
 
