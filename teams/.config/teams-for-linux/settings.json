@@ -3,17 +3,17 @@
 		"profiles": {
 			"list": [
 				{
-					"id": "9793a754-a6ae-4d76-825f-f05f4e562639",
+					"id": "1e3e986a-9c5a-4f5b-99a0-53b5519c0b9a",
 					"name": "My account",
 					"partition": "persist:teams-4-linux",
-					"avatarColor": "hsl(349, 65%, 45%)",
+					"avatarColor": "hsl(115, 65%, 45%)",
 					"avatarInitials": "MA",
 					"disableNotifications": false,
 					"muted": false,
 					"pinned": false
 				}
 			],
-			"activeId": "9793a754-a6ae-4d76-825f-f05f4e562639"
+			"activeId": "1e3e986a-9c5a-4f5b-99a0-53b5519c0b9a"
 		}
 	}
 }
