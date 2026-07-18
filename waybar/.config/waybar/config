@@ -88,7 +88,6 @@
             "8":  "󰋋",
             "9":  "󰅧",
             "10": "󰧞",
-            "urgent":  "󱐋",
             "default": "󰧞"
         },
         "on-scroll-up":   "hyprctl dispatch workspace e+1",
