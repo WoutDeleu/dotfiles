@@ -14,3 +14,6 @@ ssh/.ssh/*
 # Google Calendar OAuth client secret — deploy via Ansible Vault
 # real file lives at ~/.config/waybar-ycal/client_secret.json (via stow)
 waybar/.config/waybar-ycal/client_secret.json
+
+# teams-for-linux runtime lock/socket files — never commit
+teams/.config/teams-for-linux/Singleton*
