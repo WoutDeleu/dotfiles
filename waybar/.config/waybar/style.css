@@ -205,6 +205,19 @@ window#waybar {
     color: @critical;
 }
 
+#custom-f5 {
+    padding: 0 6px;
+    color: @muted;
+}
+
+#custom-f5.connected {
+    color: @green;
+}
+
+#custom-f5.stopped {
+    color: @muted;
+}
+
 #bluetooth {
     color: @accent;
     padding: 0 10px;

@@ -7,6 +7,11 @@ done
 
 sleep 1
 
+# Dynamic per-monitor workspace assignment (adapts to home/work monitors).
+# Start the watcher and give it a moment to place workspaces before apps launch.
+~/.config/hypr/scripts/monitor-workspaces.sh watch &
+sleep 1
+
 # Switch to ws 8 first, then settle on ws 2
 hyprctl dispatch workspace 8
 sleep 0.3

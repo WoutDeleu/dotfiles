@@ -53,7 +53,7 @@
 
     "group/indicators": {
         "orientation": "horizontal",
-        "modules": ["custom/ts", "network", "bluetooth", "backlight", "power-profiles-daemon", "battery"]
+        "modules": ["custom/ts", "custom/f5", "network", "bluetooth", "backlight", "power-profiles-daemon", "battery"]
     },
 
     "group/volume": {
@@ -250,12 +250,24 @@
         "interval": 1,
         "format": "{icon}",
         "format-icons": {
-            "connected": " 󱠾 󰕥 ",
-            "stopped": " 󱠾  "
+            "connected": " 󰛳 󰕥 ",
+            "stopped": " 󰛳  "
         },
         "return-type": "json",
         "on-click": "~/.config/waybar/scripts/toggle-float.sh tsui-float kitty --class tsui-float tsui",
         "on-click-right": "exec ~/.config/waybar/scripts/tailscale.sh --toggle"
+    },
+
+    "custom/f5": {
+        "exec": "~/.config/waybar/scripts/f5fpc.sh --status",
+        "interval": 5,
+        "format": "{icon}",
+        "format-icons": {
+            "connected": " 󰖂 󰕥 ",
+            "stopped": " 󰖂  "
+        },
+        "return-type": "json",
+        "on-click-right": "exec ~/.config/waybar/scripts/f5fpc.sh --toggle"
     },
 
     // ── Shared ────────────────────────────────────────────────────────────────
