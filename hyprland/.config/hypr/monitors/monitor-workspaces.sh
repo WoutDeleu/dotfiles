@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
 # Dynamically assign workspaces to monitors based on which displays are connected.
 #
-#   WORK setup  (laptop + both Lenovo work monitors):
-#       eDP-1        -> 8, 9
-#       P24h-2L      -> 3          (middle)
-#       P24q-20      -> 1,2,4,5,6,7,10   (right, "the rest")
+# Layout definitions live in ./layouts/*.sh — each defines a layout_<name>
+# function that fills the `map` (ws -> monitor name) and `isdef` (ws -> 1 when
+# it is the default workspace for its monitor) associative arrays:
 #
-#   HOME setup  (laptop + any single other external):
-#       external     -> 1,2,3,4,7
-#       eDP-1        -> 5,6,8,9,10
-#
-#   Laptop only (no external):
-#       eDP-1        -> everything
+#   layouts/work.sh    WORK   (laptop + both Lenovo work monitors)
+#   layouts/home.sh    HOME   (laptop + any single external)
+#   layouts/laptop.sh  LAPTOP (no external)
 #
 # Detection is by monitor *description* so it survives DP-x name changes.
 # Run `monitor-workspaces.sh apply` once, or `watch` to keep it in sync as
 # monitors are hot-plugged (dependency-free poll loop, no socat/python needed).
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LAYOUT_DIR="$SCRIPT_DIR/layouts"
+
 LAPTOP="eDP-1"
 WORK_MID_DESC="P24h-2L"     # middle work monitor -> gets ws 3
 WORK_RIGHT_DESC="P24q-20"   # right work monitor  -> gets the rest
+
+# Load layout definitions (defines layout_work / layout_home / layout_laptop).
+for f in "$LAYOUT_DIR"/*.sh; do
+  [ -r "$f" ] && source "$f"
+done
 
 apply() {
   local mons laptop mid right ext
@@ -37,20 +41,11 @@ apply() {
   declare -A isdef   # ws -> 1 when it is the default workspace for its monitor
 
   if [ -n "$mid" ] && [ -n "$right" ]; then
-    # WORK layout
-    map=( [8]="$laptop" [9]="$laptop" [3]="$mid" \
-          [1]="$right" [2]="$right" [4]="$right" [5]="$right" [6]="$right" [7]="$right" [10]="$right" )
-    isdef=( [8]=1 [3]=1 [1]=1 )
+    layout_work "$laptop" "$mid" "$right"
   elif [ -n "$ext" ]; then
-    # HOME layout (laptop + single external)
-    map=( [1]="$ext" [2]="$ext" [3]="$ext" [4]="$ext" [7]="$ext" \
-          [5]="$laptop" [6]="$laptop" [8]="$laptop" [9]="$laptop" [10]="$laptop" )
-    isdef=( [1]=1 [8]=1 )
+    layout_home "$laptop" "$ext"
   else
-    # Laptop only
-    local w
-    for w in 1 2 3 4 5 6 7 8 9 10; do map[$w]="$laptop"; done
-    isdef=( [1]=1 )
+    layout_laptop "$laptop"
   fi
 
   local w m batch=""
