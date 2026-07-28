@@ -1,52 +1,65 @@
 #!/usr/bin/env bash
-# Dynamically assign workspaces to monitors based on which displays are connected.
+# Orchestrator — detect the connected monitors, pick a layout profile, and apply
+# both its monitor arrangement (positions) and its workspace -> monitor mapping.
 #
-# Layout definitions live in ./layouts/*.sh — each defines a layout_<name>
-# function that fills the `map` (ws -> monitor name) and `isdef` (ws -> 1 when
-# it is the default workspace for its monitor) associative arrays:
+# Layout profiles live in ./layouts/*.sh. Each profile <name> defines:
+#   <name>_detect      -> sets MON_* globals, returns 0 if this profile matches
+#   <name>_arrange     -> prints `monitor <spec>` lines on stdout (positions)
+#   <name>_workspaces  -> fills the `map` (ws -> monitor) and `isdef` arrays
 #
-#   layouts/work.sh    WORK   (laptop + both Lenovo work monitors)
-#   layouts/home.sh    HOME   (laptop + any single external)
-#   layouts/laptop.sh  LAPTOP (no external)
-#
+# Profiles are tried in LAYOUTS order; the first whose *_detect succeeds wins.
 # Detection is by monitor *description* so it survives DP-x name changes.
+#
 # Run `monitor-workspaces.sh apply` once, or `watch` to keep it in sync as
 # monitors are hot-plugged (dependency-free poll loop, no socat/python needed).
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAYOUT_DIR="$SCRIPT_DIR/layouts"
 
+# Profile priority — most specific first.
+LAYOUTS=(vrt home laptop)
+
 LAPTOP="eDP-1"
 WORK_MID_DESC="P24h-2L"     # middle work monitor -> gets ws 3
 WORK_RIGHT_DESC="P24q-20"   # right work monitor  -> gets the rest
 
-# Load layout definitions (defines layout_work / layout_home / layout_laptop).
+# Load layout definitions.
 for f in "$LAYOUT_DIR"/*.sh; do
   [ -r "$f" ] && source "$f"
 done
 
+# --- helpers available to layout profiles (read the shared $MONS json) -------
+
+mon_name_by_desc() { jq -r --arg d "$1" '.[] | select(.description|contains($d)) | .name' <<<"$MONS" | head -1; }
+mon_field()        { jq -r --arg n "$1" --arg f "$2" '.[] | select(.name==$n) | .[$f]' <<<"$MONS" | head -1; }
+
+laptop_name() {
+  local n
+  n=$(jq -r --arg n "$LAPTOP" '.[] | select(.name==$n) | .name' <<<"$MONS" | head -1)
+  [ -z "$n" ] && n=$(jq -r '.[] | select(.name|startswith("eDP")) | .name' <<<"$MONS" | head -1)
+  printf '%s' "$n"
+}
+
 apply() {
-  local mons laptop mid right ext
-  mons=$(hyprctl monitors -j) || return 1
+  MONS=$(hyprctl monitors -j) || return 1
 
-  laptop=$(jq -r --arg n "$LAPTOP" '.[] | select(.name==$n) | .name' <<<"$mons" | head -1)
-  [ -z "$laptop" ] && laptop=$(jq -r '.[] | select(.name|startswith("eDP")) | .name' <<<"$mons" | head -1)
+  local selected="" L
+  for L in "${LAYOUTS[@]}"; do
+    if "${L}_detect"; then selected="$L"; break; fi
+  done
+  [ -z "$selected" ] && return 0
 
-  mid=$(jq -r --arg d "$WORK_MID_DESC"   '.[] | select(.description|contains($d)) | .name' <<<"$mons" | head -1)
-  right=$(jq -r --arg d "$WORK_RIGHT_DESC" '.[] | select(.description|contains($d)) | .name' <<<"$mons" | head -1)
-  # first external that is not the laptop (used for HOME layout)
-  ext=$(jq -r --arg l "$laptop" '.[] | select(.name != $l) | .name' <<<"$mons" | head -1)
+  # 1) Monitor arrangement (positions).
+  local arrange_batch="" line
+  while IFS= read -r line; do
+    [ -n "$line" ] && arrange_batch+="keyword $line ; "
+  done < <("${selected}_arrange")
+  [ -n "$arrange_batch" ] && hyprctl --batch "$arrange_batch" >/dev/null
 
+  # 2) Workspace -> monitor mapping.
   declare -A map     # ws -> monitor name
   declare -A isdef   # ws -> 1 when it is the default workspace for its monitor
-
-  if [ -n "$mid" ] && [ -n "$right" ]; then
-    layout_work "$laptop" "$mid" "$right"
-  elif [ -n "$ext" ]; then
-    layout_home "$laptop" "$ext"
-  else
-    layout_laptop "$laptop"
-  fi
+  "${selected}_workspaces"
 
   local w m batch=""
   for w in 1 2 3 4 5 6 7 8 9 10; do
