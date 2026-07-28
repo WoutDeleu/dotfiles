@@ -251,7 +251,7 @@
         "format": "{icon}",
         "format-icons": {
             "connected": " 󰛳 󰕥 ",
-            "stopped": " 󰛳  "
+            "stopped": ""
         },
         "return-type": "json",
         "on-click": "~/.config/waybar/scripts/toggle-float.sh tsui-float kitty --class tsui-float tsui",
@@ -264,9 +264,10 @@
         "format": "{icon}",
         "format-icons": {
             "connected": " 󰖂 󰕥 ",
-            "stopped": " 󰖂  "
+            "stopped": ""
         },
         "return-type": "json",
+        "on-click": "~/.config/waybar/scripts/f5fpc.sh --popup",
         "on-click-right": "exec ~/.config/waybar/scripts/f5fpc.sh --toggle"
     },
 
