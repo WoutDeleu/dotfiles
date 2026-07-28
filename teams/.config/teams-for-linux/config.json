@@ -1,6 +1,5 @@
 {
 	"followSystemTheme": false,
-	"menubar": "visible",
 	"customCSSLocation": "/home/woutd/.config/teams-for-linux/compactDark.css",
 	"trayIconEnabled": false,
 	"closeAppOnCross": true,
