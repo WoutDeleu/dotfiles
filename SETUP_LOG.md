@@ -442,6 +442,7 @@ Key settings applied:
 | Package | Install Method | Status |
 |---------|---------------|--------|
 | `aerc` | pacman | ✅ installed |
+| `chafa` | pacman — `pacman -S chafa` | ✅ installed — terminal image renderer used by aerc `[filters]` image/* |
 
 **Config:** `~/.config/aerc/` — stow package `aerc/`
 - `aerc.conf` + `binds.conf` → stowed (symlinked)
@@ -492,6 +493,80 @@ cache-headers     = true
 3. Create GPG key (batch, no passphrase)
 4. Retrieve app password from Ansible Vault, encrypt with GPG → `~/.config/aerc/gmail.gpg`
 5. Deploy `accounts.conf` from template (fill in email; password stays GPG-encrypted)
+
+### Email — aerc (Work accounts: Microsoft 365 via OAuth2)
+
+Two work mailboxes on **Microsoft 365 / Exchange Online** — Axxes (`wout.deleu@axxes.com`)
+and VRT (`wout.deleu@vrt.be`). M365 has **basic password auth disabled**, so these require
+**OAuth2 (XOAUTH2)** via a token helper, unlike the Gmail account which uses an app password.
+
+| Package | Install Method | Status |
+|---------|---------------|--------|
+| `mutt_oauth2.py` | manual — muttmua contrib script → `~/.local/bin/mutt_oauth2.py` (chmod +x) | ✅ installed |
+
+**Source:** `https://raw.githubusercontent.com/muttmua/mutt/master/contrib/mutt_oauth2.py`
+
+**Script edits required** (the muttmua 2020 version has no CLI flags — everything is baked in):
+- `ENCRYPTION_PIPE` recipient → `wout.deleu@gmail.com` (must be a GPG key you actually hold;
+  reuses the same ed25519 key as the Gmail app-password setup). `DECRYPTION_PIPE` left as `gpg --decrypt`.
+- `registrations['microsoft']['client_id']` → `9e5f94bc-e8a4-4e73-b8be-63364c29d753`
+  (Thunderbird's public app registration; client_secret stays empty).
+- Ships with empty `client_id` → server returns `AADSTS900144: must contain 'client_id'` until set.
+
+**Token generation** (run once per account; token file is GPG-encrypted, mode 0600):
+```bash
+export GPG_TTY=$(tty)   # required or gpg pipe can't prompt → "Difficulty decrypting token file"
+mutt_oauth2.py ~/.config/aerc/axxes.token --verbose --authorize   # microsoft / devicecode / wout.deleu@axxes.com
+mutt_oauth2.py ~/.config/aerc/vrt.token   --verbose --authorize   # microsoft / devicecode / wout.deleu@vrt.be
+# verify:
+mutt_oauth2.py ~/.config/aerc/<acct>.token --verbose --test       # expect IMAP/POP/SMTP auth succeeded
+```
+Flow prompts: registration `microsoft`, flow `devicecode` (headless URL+code), then the email.
+
+**accounts.conf** (M365 blocks — auth mechanism goes in the **URL scheme**, not a separate key):
+```ini
+[Axxes]
+source            = imaps+xoauth2://wout.deleu%40axxes.com@outlook.office365.com:993
+source-cred-cmd   = ~/.local/bin/mutt_oauth2.py ~/.config/aerc/axxes.token
+outgoing          = smtp+xoauth2://wout.deleu%40axxes.com@smtp.office365.com:587
+outgoing-cred-cmd = ~/.local/bin/mutt_oauth2.py ~/.config/aerc/axxes.token
+from              = Wout Deleu <wout.deleu@axxes.com>
+copy-to           = Sent
+
+[VRT]
+source            = imaps+xoauth2://wout.deleu%40vrt.be@outlook.office365.com:993
+source-cred-cmd   = ~/.local/bin/mutt_oauth2.py ~/.config/aerc/vrt.token
+outgoing          = smtp+xoauth2://wout.deleu%40vrt.be@smtp.office365.com:587
+outgoing-cred-cmd = ~/.local/bin/mutt_oauth2.py ~/.config/aerc/vrt.token
+from              = Wout Deleu <wout.deleu@vrt.be>
+copy-to           = Sent
+```
+Notes:
+- Servers: IMAP `outlook.office365.com:993`, SMTP `smtp.office365.com:587` (STARTTLS → scheme `smtp+`, not `smtps`).
+- `@` in username must be URL-encoded as `%40`.
+- `.token` files are machine-local secrets → **not stowed** (like `gmail.gpg` / `accounts.conf`).
+- If a tenant blocks the public Thunderbird app (`AADSTS65001` / "need admin approval"), IT must
+  register an app with delegated `IMAP.AccessAsUser.All`, `SMTP.Send`, `offline_access`.
+
+**Image rendering (`[filters]` in aerc.conf):** the shipped `image/*` filter used `magick convert`
+(deprecated in ImageMagick 7) whose stderr warning corrupted the bytes piped to kitty `icat`. Bigger
+issue: aerc renders filter output through its own **text-cell UI**, which does **not** pass terminal
+graphics-protocol escapes — so kitty (`\e_G…`) or sixel (`\eP…`) output shows up as a literal "string
+of letters". Only **chafa symbols mode** (Unicode block art = plain SGR color cells) renders inside aerc:
+```ini
+image/*=chafa -f symbols -s "$(tput cols)x$(tput lines)" --animate off -
+```
+Requires `pacman -S chafa`. Currently kept **commented out** in `aerc.conf` (left disabled by choice);
+uncomment the line above to enable. Alternative for pixel-perfect images: the old `kitty +kitten icat`
+one-liner writes straight to the terminal (bypassing aerc's UI) but is finicky (fixed placement, scroll
+artifacts).
+
+**Ansible steps (work accounts):**
+1. Download `mutt_oauth2.py` → `~/.local/bin/`, chmod +x
+2. Patch script: set `ENCRYPTION_PIPE` recipient + microsoft `client_id` (idempotent sed/lineinfile)
+3. `pacman -S chafa`; set the `image/*` chafa filter in `aerc.conf`
+4. Per account, run `--authorize` (devicecode, interactive — one-time, browser login) → `~/.config/aerc/<acct>.token`
+5. Deploy `[Axxes]`/`[VRT]` blocks into machine-local `accounts.conf`
 
 ### Stremio
 
@@ -721,3 +796,5 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-20 | Lid close behavior via `/etc/systemd/logind.conf.d/lid.conf` + Hyprland `bindl` — suspend-then-hibernate when undocked, disable `eDP-1` when docked | logind handles sleep/hibernate (can't be done in Hyprland); Hyprland handles display disable when docked. `HandleLidSwitchDocked=ignore` keeps logind out of the way. `switch:off` re-enables `eDP-1` on lid open. |
 | 2026-06-17 | aerc email client — Gmail via IMAP with GPG-encrypted app password | Google blocks plain IMAP passwords; App Password required (2FA must be on). Password stored GPG-encrypted at `~/.config/aerc/gmail.gpg` — never plaintext on disk. GPG key: ed25519/cv25519, no passphrase. accounts.conf uses `source-cred-cmd`/`outgoing-cred-cmd` to decrypt at runtime. On new machine: generate GPG key, retrieve app password from Ansible Vault, re-encrypt |
 | 2026-06-27 | SwayOSD caps-lock suppression must live in `/etc/xdg/swayosd/backend.toml` (root), not the user stow config | `swayosd-libinput-backend` runs as a **system** (root) service, so it reads `/etc/xdg/swayosd/backend.toml` and ignores `~/.config/swayosd/backend.toml`. `ignore_caps_lock_key = true` had to be set in the root file (then restart the backend) to stop the caps-lock popup. Ansible must deploy this as a root-owned file like `logid.cfg`, not a stow dotfile |
+| 2026-08-03 | Work email (Axxes, VRT) in aerc uses OAuth2/XOAUTH2 via `mutt_oauth2.py`, not app passwords | Both are Microsoft 365 with basic auth disabled — only OAuth2 works. Reused the muttmua contrib script + Thunderbird's public `client_id` (`9e5f94bc-...`); token files GPG-encrypted per account at `~/.config/aerc/<acct>.token`. aerc scheme must be `imaps+xoauth2`/`smtp+xoauth2` (auth in URL, not an `auth=` key); SMTP 587 = STARTTLS so scheme is `smtp+`, not `smtps`. `GPG_TTY` must be exported or the token pipe can't decrypt. If a tenant blocks the public app, IT must register one with delegated IMAP.AccessAsUser.All/SMTP.Send/offline_access |
+| 2026-08-03 | aerc inline images: chafa **symbols** mode only; kitty/sixel graphics don't work in aerc | aerc renders filter output through its own text-cell UI, so terminal graphics-protocol escapes (kitty `\e_G…`, sixel `\eP…`) print as literal text ("string of letters"). Only `chafa -f symbols` (Unicode block art → plain SGR color cells) renders. Original `magick convert` was also broken (IM7 deprecation warning corrupts the piped bytes). `pacman -S chafa`. Filter currently left commented in `aerc.conf`; `kitty +kitten icat` remains an option for pixel-perfect images since it writes straight to the terminal, bypassing aerc's UI |
