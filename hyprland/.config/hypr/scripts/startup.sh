@@ -18,7 +18,7 @@ sleep 0.3
 
 # Launch apps on their workspaces (silent = don't switch focus)
 hyprctl dispatch exec "[workspace 1 silent] kitty"
-hyprctl dispatch exec "[workspace 5 silent] /opt/helium-browser-bin/helium-wrapper --profile-directory=Default --app-id=hnpfjngllnobngcgfapefoaidbinmjnm"
+hyprctl dispatch exec "[workspace 5 silent] zapzap"
 hyprctl dispatch exec "[workspace 6 silent] kitty -e aerc"
 hyprctl dispatch exec "[workspace 7 silent] /opt/helium-browser-bin/helium-wrapper --profile-directory=Default --app-id=kjbdgfilnfhdoflbpgamdcdgpehopbep"
 hyprctl dispatch exec "[workspace 8 silent] kitty -e spotify_player"
