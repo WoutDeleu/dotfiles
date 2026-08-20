@@ -1,6 +1,7 @@
 [user]
 	name = WoutDeleu
 	email = WoutDeleu@users.noreply.github.com
+	signingkey = /home/woutd/.ssh/github-signing.pub
 [merge]
 	tool = nvimdiff
 [credential "https://github.com"]
@@ -11,3 +12,7 @@
 	helper = !/usr/bin/gh auth git-credential
 [push]
 	autoSetupRemote = true
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true

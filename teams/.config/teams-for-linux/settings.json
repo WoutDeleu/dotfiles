@@ -4,7 +4,7 @@
 			"list": [
 				{
 					"id": "1e3e986a-9c5a-4f5b-99a0-53b5519c0b9a",
-					"name": "My account",
+					"name": "VRT",
 					"partition": "persist:teams-4-linux",
 					"avatarColor": "hsl(115, 65%, 45%)",
 					"avatarInitials": "MA",
