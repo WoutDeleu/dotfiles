@@ -47,6 +47,11 @@ Entries are removed once they have been automated into Ansible or committed as d
 | mpv-mpris | MPRIS plugin for mpv — exposes playerctl control over mpv playback; without this `playerctl` cannot see mpv | manual — `pacman -S mpv-mpris` |
 | plymouth | Boot splash screen | manual — `pacman -S plymouth` |
 | dmidecode | DMI/SMBIOS hardware info tool | manual — `pacman -S dmidecode` |
+| cups | Common Unix Printing System | manual — `pacman -S cups` |
+| cups-pdf | CUPS virtual PDF printer | manual — `pacman -S cups-pdf` |
+| system-config-printer | GUI front-end for managing CUPS printers | manual — `pacman -S system-config-printer` |
+| avahi | mDNS/DNS-SD service discovery — needed to auto-discover network printers (e.g. HP Envy 6430) | manual — `pacman -S avahi` |
+| nss-mdns | NSS plugin for `.local` mDNS hostname resolution, works alongside avahi | manual — `pacman -S nss-mdns` |
 
 ### AUR Packages
 | Package | AUR Helper | Purpose | Status |
@@ -66,6 +71,9 @@ Entries are removed once they have been automated into Ansible or committed as d
 | swayosd-server | run as user — `swayosd-server &` or via Hyprland `exec-once` | OSD display daemon |
 | swayosd-libinput-backend | `sudo systemctl enable --now swayosd-libinput-backend` | **system** service — required for brightness control via libinput |
 | wlsunset | `systemctl --user enable --now wlsunset` | Blue light filter — warm 3500K at 21:30, cool 6500K at 06:30 |
+| cups.service | `sudo systemctl enable cups.service` | CUPS print service |
+| cups.socket | `sudo systemctl enable cups.socket` | CUPS socket activation |
+| avahi-daemon | `sudo systemctl enable --now avahi-daemon` | mDNS/DNS-SD discovery — required for network printer auto-discovery |
 
 ---
 
@@ -108,6 +116,44 @@ Entries are removed once they have been automated into Ansible or committed as d
 - **Ansible steps:** (1) `pacman -S hyprpaper`, (2) deploy `hyprpaper.conf` + the `exec-once` line,
   (3) place wallpaper images under `~/Pictures/Wallpapers/`.
 - **Reload after edits:** `killall hyprpaper && hyprpaper`.
+
+### GTK Theme (dark mode)
+- **Theme:** Catppuccin GTK (dark variant), installed from source (not AUR/pacman).
+- **Install:**
+  ```bash
+  git clone https://github.com/Fausto-Korpsvart/Catppuccin-GTK-Theme.git
+  cd Catppuccin-GTK-Theme/themes
+  ./install.sh -m dark -l
+  ```
+  `-m dark` restricts installation to the dark variant (skips the interactive light/dark prompt).
+  `-l` links the installed GTK4 theme into the libadwaita config folder so GTK4/libadwaita apps
+  (e.g. Nautilus-style GNOME4 apps) pick it up too. Default accent color used (no `-a` flag).
+- **Requires:** `gnome-themes-extra`, `gsettings-desktop-schemas` (for `gsettings`/Adwaita fallback support).
+- **Apply globally:**
+  ```bash
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+  gsettings set org.gnome.desktop.interface gtk-theme '<generated-theme-name>'
+  ```
+  Exact `gtk-theme` name depends on install flags — check `~/.themes/` for the generated folder name
+  (e.g. `Catppuccin-Mocha-Standard-<Accent>-Dark`).
+- **Per-app dark mode config (GTK3/GTK4 fallback, covers apps that ignore gsettings):**
+  ```bash
+  mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0
+  # ~/.config/gtk-3.0/settings.ini
+  [Settings]
+  gtk-theme-name=<generated-theme-name>
+  gtk-application-prefer-dark-theme=1
+  # ~/.config/gtk-4.0/settings.ini
+  [Settings]
+  gtk-application-prefer-dark-theme=1
+  ```
+- **Per-app launcher override (e.g. system-config-printer not honoring gsettings via drun):**
+  copy the app's `.desktop` file to `~/.local/share/applications/`, prefix `Exec=` with
+  `env GTK_THEME=<generated-theme-name>`, then `update-desktop-database ~/.local/share/applications`.
+- **Ansible steps:** (1) `pacman -S gnome-themes-extra gsettings-desktop-schemas`, (2) clone +
+  run `install.sh -m dark -l` (idempotency TODO — script re-installs on rerun, may need a guard),
+  (3) deploy `gtk-3.0`/`gtk-4.0` `settings.ini` as dotfiles, (4) set `gsettings` via `exec-once` in
+  Hyprland config.
 
 ### Cursor Theme
 - **Theme:** `Bibata-Modern-Amber` (rounded, amber variant), size `24`.
