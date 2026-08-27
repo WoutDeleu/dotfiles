@@ -713,6 +713,20 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
   stow package (user-level, fine).
 - **Ansible steps:** deploy `backend.toml` to `/etc/xdg/swayosd/backend.toml` as a root-owned file (same
   pattern as `logid.cfg` → `/etc/logid.cfg`, NOT a stow dotfile), then restart the backend service.
+- **Recurring problem:** `swayosd-git` has no pacman "backup file" entry for `/etc/xdg/swayosd/backend.toml`,
+  so every package upgrade overwrites it with the default config, silently dropping
+  `ignore_caps_lock_key = true` and re-enabling the caps-lock popup until manually fixed again.
+- **Fix (chosen): pacman hook** — auto-restores the setting and restarts the backend after every
+  `swayosd-git` upgrade, no manual step needed:
+  - `/usr/local/bin/swayosd-fix-config.sh` — idempotently ensures `ignore_caps_lock_key = true` under
+    `[input]` in `/etc/xdg/swayosd/backend.toml` (adds `[input]` section if missing), then runs
+    `systemctl restart swayosd-libinput-backend.service`.
+  - `/etc/pacman.d/hooks/95-swayosd-config.hook` — `Trigger`: `Operation = Install`/`Upgrade`,
+    `Type = Package`, `Target = swayosd-git`; `Action`: `When = PostTransaction`,
+    `Exec = /usr/local/bin/swayosd-fix-config.sh`.
+- **Ansible steps:** deploy both files (script as root-owned `0755` to `/usr/local/bin/`, hook to
+  `/etc/pacman.d/hooks/`) — no handler/trigger needed since pacman invokes the hook itself on
+  matching transactions.
 
 ### Fn Keys / Media Controls
 - **Media keys** (`XF86AudioPlay/Pause/Next/Prev`) bound in `hyprland/.config/hypr/keybindings.conf` via `playerctl-smart.sh`
