@@ -7,7 +7,7 @@ WEATHER_TITLE="waybar-weather"
 
 close_btop() {
     if hyprctl clients -j | jq -e ".[] | select(.title == \"$BTOP_TITLE\")" > /dev/null 2>&1; then
-        hyprctl dispatch closewindow "title:$BTOP_TITLE"
+        hyprctl dispatch 'hl.dsp.window.close({window="title:'"$BTOP_TITLE"'"})'
         return 0  # was open
     fi
     return 1  # was not open
@@ -23,7 +23,7 @@ close_swaync() {
 
 close_weather() {
     if hyprctl clients -j | jq -e ".[] | select(.title == \"$WEATHER_TITLE\")" > /dev/null 2>&1; then
-        hyprctl dispatch closewindow "title:$WEATHER_TITLE"
+        hyprctl dispatch 'hl.dsp.window.close({window="title:'"$WEATHER_TITLE"'"})'
         return 0  # was open
     fi
     return 1  # was not open

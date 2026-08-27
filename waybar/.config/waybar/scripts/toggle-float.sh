@@ -14,12 +14,12 @@ clients = json.load(sys.stdin)
 found = any(c['class'] == '$CLASS' for c in clients)
 sys.exit(0 if found else 1)
 "; then
-    hyprctl dispatch closewindow "class:^(${CLASS})$"
+    hyprctl dispatch 'hl.dsp.window.close({window="class:^('"${CLASS}"')$"})'
 else
     # Close all other known float windows first
     for other in "${FLOAT_CLASSES[@]}"; do
         [[ "$other" == "$CLASS" ]] && continue
-        hyprctl dispatch closewindow "class:^(${other})$" 2>/dev/null
+        hyprctl dispatch 'hl.dsp.window.close({window="class:^('"${other}"')$"})' 2>/dev/null
     done
     "$@"
 fi

@@ -10,7 +10,7 @@ BAR_HEIGHT=52  # bar height (40) + margin-top (6) + padding (~6)
 # Toggle when called directly (no args)
 if [[ "$1" != "--open" ]]; then
     if hyprctl clients -j | jq -e ".[] | select(.title == \"$TITLE\")" > /dev/null 2>&1; then
-        hyprctl dispatch closewindow "title:$TITLE"
+        hyprctl dispatch 'hl.dsp.window.close({window="title:'"$TITLE"'"})'
         exit 0
     fi
 fi
@@ -30,8 +30,8 @@ kitty \
 for i in $(seq 1 20); do
     sleep 0.1
     if hyprctl clients -j | jq -e ".[] | select(.title == \"$TITLE\")" > /dev/null 2>&1; then
-        hyprctl dispatch setfloating "title:$TITLE"
-        hyprctl dispatch movewindowpixel "exact ${POS_X} ${POS_Y}" "title:$TITLE"
+        hyprctl dispatch 'hl.dsp.window.float({action="on", window="title:'"$TITLE"'"})'
+        hyprctl dispatch 'hl.dsp.window.move({x='"${POS_X}"', y='"${POS_Y}"', window="title:'"$TITLE"'"})'
         break
     fi
 done

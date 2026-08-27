@@ -40,6 +40,20 @@ laptop_name() {
   printf '%s' "$n"
 }
 
+# Convert a `monitor` keyword spec (e.g. "eDP-1,preferred,0x0,1" or "eDP-1,disable")
+# into an hl.monitor(...) Lua call. The Lua config has no legacy `keyword` parser,
+# so runtime changes go through `hyprctl eval`.
+mon_spec_to_lua() {
+  local spec="$1" IFS=,
+  local -a f=($spec)
+  if [ "${f[1]}" = "disable" ]; then
+    printf 'hl.monitor({output="%s", disabled=true})' "${f[0]}"
+  else
+    printf 'hl.monitor({output="%s", mode="%s", position="%s", scale=%s})' \
+      "${f[0]}" "${f[1]}" "${f[2]}" "${f[3]}"
+  fi
+}
+
 apply() {
   MONS=$(hyprctl monitors -j) || return 1
 
@@ -49,10 +63,11 @@ apply() {
   done
   [ -z "$selected" ] && return 0
 
-  # 1) Monitor arrangement (positions).
+  # 1) Monitor arrangement (positions). Emit hl.monitor(...) via `eval`
+  #    (the Lua config has no legacy `keyword` parser).
   local arrange_batch="" line
   while IFS= read -r line; do
-    [ -n "$line" ] && arrange_batch+="keyword $line ; "
+    [ -n "$line" ] && arrange_batch+="eval $(mon_spec_to_lua "${line#monitor }") ; "
   done < <("${selected}_arrange")
   [ -n "$arrange_batch" ] && hyprctl --batch "$arrange_batch" >/dev/null
 
@@ -66,9 +81,9 @@ apply() {
     m=${map[$w]}
     [ -z "$m" ] && continue
     if [ "${isdef[$w]}" = "1" ]; then
-      batch+="keyword workspace $w,monitor:$m,default:true ; "
+      batch+="eval hl.workspace_rule({workspace=\"$w\", monitor=\"$m\", default=true}) ; "
     else
-      batch+="keyword workspace $w,monitor:$m ; "
+      batch+="eval hl.workspace_rule({workspace=\"$w\", monitor=\"$m\"}) ; "
     fi
   done
   [ -n "$batch" ] && hyprctl --batch "$batch" >/dev/null
@@ -79,7 +94,7 @@ apply() {
   for w in $open; do
     case "$w" in ''|*[!0-9]*) continue ;; esac   # skip special/negative
     m=${map[$w]}
-    [ -n "$m" ] && hyprctl dispatch moveworkspacetomonitor "$w $m" >/dev/null 2>&1
+    [ -n "$m" ] && hyprctl dispatch "hl.dsp.workspace.move({workspace=$w, monitor=\"$m\"})" >/dev/null 2>&1
   done
 }
 

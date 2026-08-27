@@ -27,7 +27,7 @@ show_popup() {
   local win_w=760 win_h=460 bar_height=52
 
   if hyprctl clients -j | jq -e ".[] | select(.title == \"$title\")" >/dev/null 2>&1; then
-    hyprctl dispatch closewindow "title:$title"
+    hyprctl dispatch 'hl.dsp.window.close({window="title:'"$title"'"})'
     return 0
   fi
 
@@ -45,8 +45,8 @@ show_popup() {
   for _ in $(seq 1 20); do
     sleep 0.1
     if hyprctl clients -j | jq -e ".[] | select(.title == \"$title\")" >/dev/null 2>&1; then
-      hyprctl dispatch setfloating "title:$title"
-      hyprctl dispatch movewindowpixel "exact ${pos_x} ${pos_y}" "title:$title"
+      hyprctl dispatch 'hl.dsp.window.float({action="on", window="title:'"$title"'"})'
+      hyprctl dispatch 'hl.dsp.window.move({x='"${pos_x}"', y='"${pos_y}"', window="title:'"$title"'"})'
       break
     fi
   done
