@@ -17,3 +17,6 @@ waybar/.config/waybar-ycal/client_secret.json
 
 # teams-for-linux runtime lock/socket files — never commit
 teams/.config/teams-for-linux/Singleton*
+
+# Isolated development worktrees
+.worktrees/
