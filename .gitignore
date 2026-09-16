@@ -18,5 +18,9 @@ waybar/.config/waybar-ycal/client_secret.json
 # teams-for-linux runtime lock/socket files — never commit
 teams/.config/teams-for-linux/Singleton*
 
+# nwg-displays workspace output is unused; workspaces are assigned dynamically
+hyprland/.config/hypr/workspaces.conf
+hyprland/.config/hypr/workspaces.lua
+
 # Isolated development worktrees
 .worktrees/
