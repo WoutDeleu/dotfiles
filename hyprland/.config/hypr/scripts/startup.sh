@@ -7,7 +7,7 @@ done
 
 sleep 1
 
-# Dynamic per-monitor workspace assignment (adapts to home/work monitors).
+# Dynamic per-monitor workspace assignment (positions are owned by nwg-displays).
 # Start the watcher and give it a moment to place workspaces before apps launch.
 ~/.config/hypr/monitors/monitor-workspaces.sh watch &
 sleep 1

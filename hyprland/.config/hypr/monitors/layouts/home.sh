@@ -1,6 +1,5 @@
 # HOME layout — laptop + any single external monitor.
 #
-# Arrangement: external on the left, laptop to its right (same top row).
 #   external  -> ws 1,2,3,4,7
 #   eDP-1     -> ws 5,6,8,9,10
 #
@@ -10,13 +9,6 @@ home_detect() {
   MON_LAPTOP=$(laptop_name)
   MON_EXT=$(jq -r --arg l "$MON_LAPTOP" '.[] | select(.name != $l) | .name' <<<"$MONS" | head -1)
   [ -n "$MON_EXT" ]
-}
-
-home_arrange() {
-  local ew
-  ew=$(mon_field "$MON_EXT" width)
-  echo "monitor $MON_EXT,preferred,0x0,1"
-  echo "monitor $MON_LAPTOP,preferred,${ew}x0,1"
 }
 
 home_workspaces() {

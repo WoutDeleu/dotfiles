@@ -1,5 +1,5 @@
 require("keybindings")
-require("monitors.arrangement")
+require("monitors")
 require("decoration")
 require("monitors.workspaces")
 require("screenshots")
@@ -32,6 +32,9 @@ hl.config({
     },
     cursor = {
         no_warps = false,
+    },
+    xwayland = {
+        force_zero_scaling = true,
     },
 })
 

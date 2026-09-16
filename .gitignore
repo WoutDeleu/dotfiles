@@ -18,5 +18,10 @@ waybar/.config/waybar-ycal/client_secret.json
 # teams-for-linux runtime lock/socket files — never commit
 teams/.config/teams-for-linux/Singleton*
 
+# nwg-displays Lua output is loaded; legacy/workspace output is unused
+hyprland/.config/hypr/monitors.conf
+hyprland/.config/hypr/workspaces.conf
+hyprland/.config/hypr/workspaces.lua
+
 # Isolated development worktrees
 .worktrees/

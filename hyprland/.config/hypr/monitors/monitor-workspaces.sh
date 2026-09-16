@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Orchestrator — detect the connected monitors, pick a layout profile, and apply
-# both its monitor arrangement (positions) and its workspace -> monitor mapping.
+# its workspace -> monitor mapping. Monitor arrangement is owned by nwg-displays
+# and loaded from ~/.config/hypr/monitors.lua.
 #
 # Layout profiles live in ./layouts/*.sh. Each profile <name> defines:
 #   <name>_detect      -> sets MON_* globals, returns 0 if this profile matches
-#   <name>_arrange     -> prints `monitor <spec>` lines on stdout (positions)
 #   <name>_workspaces  -> fills the `map` (ws -> monitor) and `isdef` arrays
 #
 # Profiles are tried in LAYOUTS order; the first whose *_detect succeeds wins.
@@ -31,7 +31,6 @@ done
 # --- helpers available to layout profiles (read the shared $MONS json) -------
 
 mon_name_by_desc() { jq -r --arg d "$1" '.[] | select(.description|contains($d)) | .name' <<<"$MONS" | head -1; }
-mon_field()        { jq -r --arg n "$1" --arg f "$2" '.[] | select(.name==$n) | .[$f]' <<<"$MONS" | head -1; }
 
 laptop_name() {
   local n
@@ -40,22 +39,39 @@ laptop_name() {
   printf '%s' "$n"
 }
 
-# Convert a `monitor` keyword spec (e.g. "eDP-1,preferred,0x0,1" or "eDP-1,disable")
-# into an hl.monitor(...) Lua call. The Lua config has no legacy `keyword` parser,
-# so runtime changes go through `hyprctl eval`.
-mon_spec_to_lua() {
-  local spec="$1" IFS=,
-  local -a f=($spec)
-  if [ "${f[1]}" = "disable" ]; then
-    printf 'hl.monitor({output="%s", disabled=true})' "${f[0]}"
-  else
-    printf 'hl.monitor({output="%s", mode="%s", position="%s", scale=%s})' \
-      "${f[0]}" "${f[1]}" "${f[2]}" "${f[3]}"
-  fi
+# Physical lid state ("open"/"closed") from the ACPI button, so we never light
+# up the internal panel while the laptop is shut.
+lid_state() {
+  local f
+  for f in /proc/acpi/button/lid/*/state; do
+    [ -r "$f" ] || continue
+    grep -qi closed "$f" && { printf 'closed'; return; }
+  done
+  printf 'open'
 }
 
 apply() {
-  MONS=$(hyprctl monitors -j) || return 1
+  # `monitors all` (not just enabled ones) so a panel that got disabled by a
+  # lid-close/suspend stays visible here and can be recovered.
+  MONS=$(hyprctl monitors all -j) || return 1
+
+  # Reconcile the laptop panel with the physical lid. Reloading on a missed
+  # lid-open event restores the nwg-displays layout instead of inventing one.
+  if [ "$(lid_state)" = "closed" ]; then
+    local laptop
+    laptop=$(laptop_name)
+    if [ -n "$laptop" ]; then
+      hyprctl eval "hl.monitor({output=\"$laptop\", disabled=true})" >/dev/null 2>&1
+      MONS=$(jq --arg n "$laptop" 'map(select(.name != $n))' <<<"$MONS")
+    fi
+  else
+    local laptop
+    laptop=$(laptop_name)
+    if [ -n "$laptop" ] && [ "$(jq -r --arg n "$laptop" '.[] | select(.name==$n) | .disabled' <<<"$MONS")" = "true" ]; then
+      hyprctl reload >/dev/null 2>&1
+      MONS=$(hyprctl monitors all -j) || return 1
+    fi
+  fi
 
   local selected="" L
   for L in "${LAYOUTS[@]}"; do
@@ -63,15 +79,7 @@ apply() {
   done
   [ -z "$selected" ] && return 0
 
-  # 1) Monitor arrangement (positions). Emit hl.monitor(...) via `eval`
-  #    (the Lua config has no legacy `keyword` parser).
-  local arrange_batch="" line
-  while IFS= read -r line; do
-    [ -n "$line" ] && arrange_batch+="eval $(mon_spec_to_lua "${line#monitor }") ; "
-  done < <("${selected}_arrange")
-  [ -n "$arrange_batch" ] && hyprctl --batch "$arrange_batch" >/dev/null
-
-  # 2) Workspace -> monitor mapping.
+  # Workspace -> monitor mapping.
   declare -A map     # ws -> monitor name
   declare -A isdef   # ws -> 1 when it is the default workspace for its monitor
   "${selected}_workspaces"
@@ -99,12 +107,17 @@ apply() {
 }
 
 watch() {
-  local last="" cur
+  local last="" cur snap
   while true; do
-    cur=$(hyprctl monitors -j 2>/dev/null | jq -Sc '[.[] | {name, description}]' 2>/dev/null)
-    if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
-      apply
-      last="$cur"
+    # Track disabled state and lid position too, so a stuck-off panel or a
+    # lid open/close both trigger a re-apply (monitors all => disabled visible).
+    snap=$(hyprctl monitors all -j 2>/dev/null | jq -Sc '[.[] | {name, description, disabled}]' 2>/dev/null)
+    if [ -n "$snap" ]; then
+      cur="${snap}|$(lid_state)"
+      if [ "$cur" != "$last" ]; then
+        apply
+        last="$cur"
+      fi
     fi
     sleep 2
   done

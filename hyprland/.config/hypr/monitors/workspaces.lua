@@ -1,4 +1,4 @@
--- Workspace-to-monitor assignment and monitor arrangement are orchestrated by
+-- Workspace-to-monitor assignment is orchestrated by
 
 -- ~/.config/hypr/monitors/monitor-workspaces.sh
 
@@ -11,6 +11,7 @@
 -- HOME (laptop + single external):   external -> 1,2,3,4,7 | eDP-1 -> 5,6,8,9,10
 
 -- Laptop only:                       everything on eDP-1
+-- Monitor arrangement is managed by nwg-displays via ../monitors.lua.
 
 -- The watcher is started from scripts/startup.sh and re-applies on hot-plug.
 

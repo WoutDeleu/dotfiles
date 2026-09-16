@@ -57,6 +57,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | Package | AUR Helper | Purpose | Status |
 |---------|-----------|---------|--------|
 | logiops | yay | Logitech HID++ daemon (`logid`) — remaps MX Master 3 buttons/gestures (see Input Devices) | manual |
+| nwg-displays | yay | GUI for arranging Hyprland outputs; generates `~/.config/hypr/monitors.lua` | manual — `yay -S nwg-displays` |
 | ycal | yay | Google Calendar module for Waybar — client secret at `~/.config/waybar-ycal/client_secret.json` (gitignored, via stow), OAuth not yet configured | manual |
 | swayosd-git | yay | Wayland OSD for volume/brightness — shows overlay bar on key/scroll change | manual — `yay -S swayosd-git` |
 | spotify-player | yay | Terminal Spotify client with TUI | manual — `yay -S spotify-player` |
@@ -175,7 +176,23 @@ Entries are removed once they have been automated into Ansible or committed as d
   `hyprland.conf`, (3) run the two `gsettings set` commands (or manage via a dconf/gsettings task).
 
 ### Display / Monitor Layout
-<!-- Log: monitor names (wlr-randr output), hyprland monitor config lines -->
+- **Tool:** `nwg-displays` (`yay -S nwg-displays`).
+- **Monitor geometry owner:** `nwg-displays` generates
+  `hyprland/.config/hypr/monitors.lua`, loaded by `require("monitors")` in
+  `hyprland.lua`. Use the GUI for monitor mode, position, scale, and VRR.
+- **Workspace owner:** `hyprland/.config/hypr/monitors/monitor-workspaces.sh`
+  detects laptop/home/work monitor profiles and applies only workspace mappings.
+  Its watcher starts from `scripts/startup.sh`; it must not emit monitor
+  arrangement calls.
+- **Lid recovery:** the watcher may disable the laptop panel for a physically
+  closed lid or reload Hyprland after a missed lid-open event. Reloading restores
+  the saved `nwg-displays` layout.
+- **Generated compatibility files:** `monitors.conf`, `workspaces.conf`, and
+  `workspaces.lua` are intentionally ignored because Hyprland loads
+  `monitors.lua` and workspace placement is dynamic. `nwg-displays` may recreate
+  them when profiles are saved.
+- **Reason:** the former arrangement module and profile `_arrange` functions
+  competed with `nwg-displays`, so GUI changes were saved and then overwritten.
 
 ### Screenshots
 - **Stack:** `grim` (capture) + `slurp` (region select) + `satty` (annotation editor).
@@ -688,7 +705,7 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 - **Mechanism:** map the thumb gesture button (`cid: 0xc3`) to a `Keypress` of the current
   `$mainMod`. logiops holds the key while the button is held, so thumb-button + scroll =
   `$mainMod`+scroll, which hits the existing Hyprland bind
-  `bind = $mainMod, mouse_down/up, workspace, e+1/e-1` (in `workspaces.conf`).
+  in the `mouse_down` / `mouse_up` `hl.bind` calls in `monitors/workspaces.lua`.
   No Hyprland change needed beyond that bind.
 - **Key must match `$mainMod`:** `$mainMod = ALT` → emit `KEY_LEFTALT`. If `$mainMod` ever
   becomes SUPER, change the key to `KEY_LEFTMETA`.
@@ -858,3 +875,4 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-27 | SwayOSD caps-lock suppression must live in `/etc/xdg/swayosd/backend.toml` (root), not the user stow config | `swayosd-libinput-backend` runs as a **system** (root) service, so it reads `/etc/xdg/swayosd/backend.toml` and ignores `~/.config/swayosd/backend.toml`. `ignore_caps_lock_key = true` had to be set in the root file (then restart the backend) to stop the caps-lock popup. Ansible must deploy this as a root-owned file like `logid.cfg`, not a stow dotfile |
 | 2026-08-03 | Work email (Axxes, VRT) in aerc uses OAuth2/XOAUTH2 via `mutt_oauth2.py`, not app passwords | Both are Microsoft 365 with basic auth disabled — only OAuth2 works. Reused the muttmua contrib script + Thunderbird's public `client_id` (`9e5f94bc-...`); token files GPG-encrypted per account at `~/.config/aerc/<acct>.token`. aerc scheme must be `imaps+xoauth2`/`smtp+xoauth2` (auth in URL, not an `auth=` key); SMTP 587 = STARTTLS so scheme is `smtp+`, not `smtps`. `GPG_TTY` must be exported or the token pipe can't decrypt. If a tenant blocks the public app, IT must register one with delegated IMAP.AccessAsUser.All/SMTP.Send/offline_access |
 | 2026-08-03 | aerc inline images: chafa **symbols** mode only; kitty/sixel graphics don't work in aerc | aerc renders filter output through its own text-cell UI, so terminal graphics-protocol escapes (kitty `\e_G…`, sixel `\eP…`) print as literal text ("string of letters"). Only `chafa -f symbols` (Unicode block art → plain SGR color cells) renders. Original `magick convert` was also broken (IM7 deprecation warning corrupts the piped bytes). `pacman -S chafa`. Filter currently left commented in `aerc.conf`; `kitty +kitten icat` remains an option for pixel-perfect images since it writes straight to the terminal, bypassing aerc's UI |
+| 2026-09-15 | nwg-displays owns monitor geometry; monitor-workspaces watcher owns only dynamic workspace mapping and lid recovery | Two arrangement sources competed: nwg-displays saved changes correctly, then the watcher restored hard-coded profile coordinates. Loading generated `monitors.lua` and removing watcher arrangement code makes GUI layouts persistent. |
