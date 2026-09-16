@@ -1,4 +1,4 @@
--- Workspace-to-monitor assignment and monitor arrangement are orchestrated by
+-- Workspace-to-monitor assignment is orchestrated by
 
 -- ~/.config/hypr/monitors/monitor-workspaces.sh
 
@@ -12,7 +12,9 @@
 
 -- Laptop only:                       everything on eDP-1
 
--- The watcher is started from scripts/startup.sh and re-applies on hot-plug.
+-- Monitor geometry comes from ~/.config/hypr/monitors.lua.
+-- The watcher is started from scripts/startup.sh and re-applies on hot-plug or
+-- lid-driven monitor changes.
 
 -- Switch workspaces
 hl.bind(var_mainMod .. " + 1", hl.dsp.focus({ workspace = 1 }))

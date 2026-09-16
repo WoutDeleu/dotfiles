@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # Orchestrator — detect the connected monitors, pick a layout profile, and apply
-# both its monitor arrangement (positions) and its workspace -> monitor mapping.
+# its workspace -> monitor mapping.
 #
 # Layout profiles live in ./layouts/*.sh. Each profile <name> defines:
 #   <name>_detect      -> sets MON_* globals, returns 0 if this profile matches
-#   <name>_arrange     -> prints `monitor <spec>` lines on stdout (positions)
 #   <name>_workspaces  -> fills the `map` (ws -> monitor) and `isdef` arrays
 #
 # Profiles are tried in LAYOUTS order; the first whose *_detect succeeds wins.
 # Detection is by monitor *description* so it survives DP-x name changes.
 #
 # Run `monitor-workspaces.sh apply` once, or `watch` to keep it in sync as
-# monitors are hot-plugged (dependency-free poll loop, no socat/python needed).
+# monitors are hot-plugged or the laptop lid changes monitor availability
+# (dependency-free poll loop, no socat/python needed).
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAYOUT_DIR="$SCRIPT_DIR/layouts"
@@ -31,27 +31,12 @@ done
 # --- helpers available to layout profiles (read the shared $MONS json) -------
 
 mon_name_by_desc() { jq -r --arg d "$1" '.[] | select(.description|contains($d)) | .name' <<<"$MONS" | head -1; }
-mon_field()        { jq -r --arg n "$1" --arg f "$2" '.[] | select(.name==$n) | .[$f]' <<<"$MONS" | head -1; }
 
 laptop_name() {
   local n
   n=$(jq -r --arg n "$LAPTOP" '.[] | select(.name==$n) | .name' <<<"$MONS" | head -1)
   [ -z "$n" ] && n=$(jq -r '.[] | select(.name|startswith("eDP")) | .name' <<<"$MONS" | head -1)
   printf '%s' "$n"
-}
-
-# Convert a `monitor` keyword spec (e.g. "eDP-1,preferred,0x0,1" or "eDP-1,disable")
-# into an hl.monitor(...) Lua call. The Lua config has no legacy `keyword` parser,
-# so runtime changes go through `hyprctl eval`.
-mon_spec_to_lua() {
-  local spec="$1" IFS=,
-  local -a f=($spec)
-  if [ "${f[1]}" = "disable" ]; then
-    printf 'hl.monitor({output="%s", disabled=true})' "${f[0]}"
-  else
-    printf 'hl.monitor({output="%s", mode="%s", position="%s", scale=%s})' \
-      "${f[0]}" "${f[1]}" "${f[2]}" "${f[3]}"
-  fi
 }
 
 apply() {
@@ -63,15 +48,7 @@ apply() {
   done
   [ -z "$selected" ] && return 0
 
-  # 1) Monitor arrangement (positions). Emit hl.monitor(...) via `eval`
-  #    (the Lua config has no legacy `keyword` parser).
-  local arrange_batch="" line
-  while IFS= read -r line; do
-    [ -n "$line" ] && arrange_batch+="eval $(mon_spec_to_lua "${line#monitor }") ; "
-  done < <("${selected}_arrange")
-  [ -n "$arrange_batch" ] && hyprctl --batch "$arrange_batch" >/dev/null
-
-  # 2) Workspace -> monitor mapping.
+  # Workspace -> monitor mapping.
   declare -A map     # ws -> monitor name
   declare -A isdef   # ws -> 1 when it is the default workspace for its monitor
   "${selected}_workspaces"
