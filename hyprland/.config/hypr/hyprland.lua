@@ -26,6 +26,7 @@ hl.config({
         follow_mouse = 2,
         kb_layout = "us",
         kb_options = "caps:escape",
+        scroll_factor = 0.4,
         touchpad = {
             natural_scroll = true,
         },
