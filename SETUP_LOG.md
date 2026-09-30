@@ -38,7 +38,8 @@ Entries are removed once they have been automated into Ansible or committed as d
 | trash-cli | Moves files to `~/.local/share/Trash` instead of permanent deletion; used via `rm` alias | manual — `pacman -S trash-cli` |
 | hyprlock | Hyprland-native lock screen — config at `~/.config/hypr/hyprlock.conf` | manual — `pacman -S hyprlock` |
 | hypridle | Hyprland-native idle daemon — triggers lock/sleep/hibernate on inactivity; config at `~/.config/hypr/hypridle.conf` | manual — `pacman -S hypridle` |
-| power-profiles-daemon | Power profile switching daemon (performance / balanced / power-saver); see Power Profile Management | manual — `pacman -S power-profiles-daemon` |
+| power-profiles-daemon | Firmware-integrated power-profile daemon (`low-power`, `balanced`, `performance`); see Power Profile Management | manual — `pacman -S power-profiles-daemon` |
+| powertop | Power-consumption diagnostics and tuning utility; run interactively, do not apply its auto-tune settings persistently | manual — `pacman -S powertop` |
 | vlc | Media player with broad codec support | manual — `pacman -S vlc` |
 | onlyoffice-bin | Office suite (Writer/Calc/Impress) | manual — `pacman -S onlyoffice-bin` |
 | zathura | Minimal PDF/document viewer | manual — `pacman -S zathura zathura-pdf-mupdf` |
@@ -72,6 +73,9 @@ Entries are removed once they have been automated into Ansible or committed as d
 | swayosd-server | run as user — `swayosd-server &` or via Hyprland `exec-once` | OSD display daemon |
 | swayosd-libinput-backend | `sudo systemctl enable --now swayosd-libinput-backend` | **system** service — required for brightness control via libinput |
 | wlsunset | `systemctl --user enable --now wlsunset` | Blue light filter — warm 3500K at 21:30, cool 6500K at 06:30 |
+| hypridle | `systemctl --user enable --now hypridle` | Idle → blank/lock/suspend daemon; single AC/battery-aware config, unit in `systemd/` stow package |
+| battery-monitor.timer | `systemctl --user enable --now battery-monitor.timer` | Fires `battery-monitor` every 2 min — warns at 20/10%, hibernates at 5% (no-op on AC); unit in `systemd/` |
+| power-profiles-daemon | `sudo systemctl enable --now power-profiles-daemon` | System power-profile daemon; TLP and `tlp-rdw` are intentionally not installed |
 | cups.service | `sudo systemctl enable cups.service` | CUPS print service |
 | cups.socket | `sudo systemctl enable cups.socket` | CUPS socket activation |
 | avahi-daemon | `sudo systemctl enable --now avahi-daemon` | mDNS/DNS-SD discovery — required for network printer auto-discovery |
@@ -226,24 +230,39 @@ Entries are removed once they have been automated into Ansible or committed as d
 
 ### Screen Lock
 - **Tool:** `hyprlock` (Hyprland-native) + `hypridle` (idle daemon) — `pacman -S hyprlock hypridle`
-- **Autostart:** `exec-once = hypridle` in `hyprland/.config/hypr/hyprland.conf`
-- **hypridle config** (`hyprland/.config/hypr/hypridle.conf`, stow package `hyprland/`):
-  - 5 min idle → `loginctl lock-session` (lock)
-  - 10 min idle → `hyprctl dispatch dpms off` (screen off); resumes on activity
-  - 30 min idle → `systemctl suspend` (sleep)
-  - 60 min idle → `systemctl hibernate`
-  - `before_sleep_cmd = loginctl lock-session` — always locks before sleep/hibernate
-- **hyprlock config** (`hyprland/.config/hypr/hyprlock.conf`): blurred screenshot background, centered password input field
-- **Manual lock:** `loginctl lock-session` (or bind a key in `keybindings.conf`)
-- **Ansible steps:** (1) `pacman -S hyprlock hypridle`, (2) stow `hyprland/` (deploys both configs + `exec-once` line)
+- **Autostart:** systemd **user** service `hypridle.service` (`systemctl --user enable --now hypridle`),
+  **not** `exec-once`. Unit in stow package `systemd/`; runs `hypridle -c ~/.config/hypr/hypridle.conf`.
+- **hypridle config** — one AC/battery-aware file `hyprland/.config/hypr/hypridle.conf` (stow package
+  `hyprland/`). hypridle timeouts are static, so the shorter battery actions are guarded inline with
+  `grep -q 1 /sys/class/power_supply/ACAD/online || <action>` (runs only on battery); the longer AC
+  actions run unguarded as the guaranteed fallback:
+
+  |         | blank screen | lock  | suspend-then-hibernate |
+  |---------|--------------|-------|------------------------|
+  | battery | 3 min        | 5 min | 15 min                 |
+  | AC      | 7 min        | 8 min | 20 min                 |
+
+  - Blank-before-lock ordering is **intentional** (screen powers down first, lock follows).
+  - `before_sleep_cmd = loginctl lock-session` — always locks before sleep/hibernate.
+  - `after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms("on")'` — wakes the panel on resume.
+- **hyprlock config** (`hyprland/.config/hypr/hyprlock.conf`): blurred background, centered password field.
+- **Manual lock:** `loginctl lock-session` (or a bind in `keybindings.lua`).
+- **Ansible steps:** (1) `pacman -S hyprlock hypridle`, (2) stow `hyprland/` + `systemd/`,
+  (3) `systemctl --user enable --now hypridle`.
 
 ### Power Profile Management
-- **Daemon:** `power-profiles-daemon` — `pacman -S power-profiles-daemon`; enable: `systemctl enable --now power-profiles-daemon`.
+- **Daemon:** `power-profiles-daemon` — installed and enabled with `sudo systemctl enable --now power-profiles-daemon`.
 - **Profiles:** `performance`, `balanced` (default), `power-saver`. Switch with `powerprofilesctl set <profile>`.
 - **Auto-switching (udev rule):** `systemd/etc/udev/rules.d/80-power-profiles.rules` (stow package `systemd/`).
   - AC plugged in (`ACAD` online=1) → `balanced`
   - AC unplugged (`ACAD` online=0) → `power-saver`
-  - Uses `systemd-run --no-block` so `powerprofilesctl` can reach the system D-Bus from udev context.
+  - Uses `systemd-run --no-block` so `powerprofilesctl` can reach the system D-Bus from udev context,
+    and calls it as `/usr/bin/python3 /usr/bin/powerprofilesctl …`. `powerprofilesctl` is a Python
+    script; a `mise`/`pyenv`-shimmed `python3` on `PATH` lacks the system `gi` bindings, so an
+    unqualified call fails with `ModuleNotFoundError: No module named 'gi'`. **Same caveat
+    interactively** — a bare `powerprofilesctl` in a mise shell fails; use
+    `/usr/bin/python3 /usr/bin/powerprofilesctl`, or just cycle the profile from the Waybar module
+    (D-Bus, unaffected).
   - **Machine-specific:** AC adapter kernel name is `ACAD` on this laptop — verify with `ls /sys/class/power_supply/` on a different machine.
   - Deploy: `sudo cp ... /etc/udev/rules.d/80-power-profiles.rules && sudo udevadm control --reload-rules`
 - **Waybar module:** built-in `power-profiles-daemon` module — added to `group/indicators` in `waybar/` stow package. Click cycles through profiles. Icons: `󱐋` performance, `󰗑` balanced, `󰌪` power-saver.
@@ -408,14 +427,16 @@ yay -S nvim-packer-git
   `config` file and leaves everything else as real local files.
 - **Keys are NEVER tracked:** repo-root `.gitignore` has `ssh/.ssh/*` + `!ssh/.ssh/config`, so only
   `config` can ever be committed — private keys / `known_hosts` are excluded even if copied in.
-- **Current keys (machine-local, mode `600`):** `~/.ssh/arrakis` (+`.pub`) for host `arrakis`,
-  `~/.ssh/tailscale` (+`.pub`) for the Tailscale homelab/VPS host (root@192.168.129.34),
-  `~/.ssh/id_ed25519` (+`.pub`). These must be restored from the encrypted backup (see Ansible
-  Secrets Checklist) on a clean install.
-- **`tailscale` SSH host:** alias for the Tailscale IP of the homelab/VPS (`192.168.129.34`, user
-  `root`). The `tailscale` package itself is **not yet automated** — must be installed (`pacman -S
-  tailscale`) and `tailscaled` enabled/started (`systemctl enable --now tailscaled`), then
-  authenticated (`tailscale up`) manually on a new machine until an Ansible task is added.
+- **Current keys (machine-local, mode `600`):** one key per host, all referenced from
+  `ssh/.ssh/config`: `~/.ssh/caladan`, `~/.ssh/arrakis`, `~/.ssh/guild`, `~/.ssh/hawat`,
+  `~/.ssh/yueh` (homelab hosts on the `192.168.129.0/24` LAN) and `~/.ssh/bitbucket`
+  (Bitbucket, `IdentitiesOnly yes`). `~/.ssh/id_ed25519` (+`.pub`) is the default fallback key.
+  All (+`.pub`) must be restored from the encrypted backup (see Ansible Secrets Checklist) on a
+  clean install.
+- **Homelab SSH hosts:** `caladan` (`192.168.129.10`, user `woutd`), `arrakis` (`.11`, `root`),
+  `guild` (`.34`, `root`), `hawat` (`.35`, `root`), `yueh` (`.36`, `root`) — reachable on the LAN
+  or over Tailscale when remote. Tailscale VPN daemon setup is documented under
+  **Phase 6 → Networking**.
 - **Ansible steps:** (1) `stow ssh` to deploy `~/.ssh/config`; (2) vault-decrypt the private keys
   into `~/.ssh/` with mode `0600` (dir `0700`); (3) TODO: add `tailscale` package + service to
   Ansible (see open task).
@@ -771,9 +792,32 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 |---------|---------|--------|
 | `iwd` | Wifi daemon (replaces NetworkManager) | pre-installed |
 | `impala` | TUI wifi manager for iwd — keyboard-driven | manual — `pacman -S impala` |
+| `tailscale` | Mesh VPN daemon — reaches the homelab SSH hosts (see Phase 4 → SSH) | manual — `pacman -S tailscale` |
+| `tsui` | Tailscale TUI (Go binary) — left-click target of the waybar `custom/ts` module | manual — built/installed to `/usr/local/bin/tsui`, **not** pacman-tracked |
 
-- `iwd` was already running as the wifi backend — no NetworkManager
-- `impala` added on top as TUI frontend; no service changes needed
+- **Live backend (verified 2026-09-02):** `iwd` (Wi-Fi auth) + `systemd-networkd` (IP/DHCP/routing)
+  + `systemd-resolved` (DNS). No NetworkManager / wpa_supplicant / dhcpcd. `/etc/resolv.conf` →
+  `stub-resolv.conf` (127.0.0.53). `iwd` has no `/etc/iwd/main.conf`, so it keeps the default
+  `EnableNetworkConfiguration=false` and leaves IP config to networkd — do **not** turn on iwd's
+  built-in network config or it will fight networkd.
+- **⚠️ Recovery gap — the IP layer isn't tracked:** `systemd-networkd` is driven by three custom,
+  **non-package-owned** files in `/etc/systemd/network/` — `20-ethernet.network`, `20-wlan.network`,
+  `20-wwan.network`. They set `DHCP=yes`, `MulticastDNS=yes`, and route metrics (Ethernet `100` <
+  Wi-Fi `600` < WWAN `700`, so wired is preferred). None of this is in the repo — a clean reinstall
+  loses DHCP/metrics/mDNS config. **TODO:** copy these into the repo (root-owned → Ansible `files/`,
+  like `logid.cfg`) and deploy on setup.
+- **Tailscale:** after install, enable the daemon and authenticate —
+  `sudo systemctl enable --now tailscaled`, then `tailscale up`. Not yet automated in Ansible.
+- **Waybar `custom/ts`:** script `waybar/scripts/tailscale.sh` shows connection state
+  (`--status`); left-click opens `tsui`, right-click toggles `tailscale up`/`down` (`--toggle`).
+  Requires both `tailscale` and `tsui` on `PATH`.
+- **mDNS is redundant / doubled up:** `.local` resolution already works through `systemd-resolved`
+  (networkd `MulticastDNS=yes` + the `resolve` entry in `nsswitch.conf`), so the installed
+  `nss-mdns` is **redundant** and correctly left out of `nsswitch.conf`. Separately, `avahi-daemon`
+  is also active and answering mDNS/DNS-SD, so **two mDNS responders (avahi + resolved) are bound to
+  UDP 5353 at once.** Keep `avahi` only for DNS-SD service discovery (CUPS network printers);
+  otherwise pick one responder — set `MulticastDNS=resolve` (query-only) in the networkd files, or
+  disable `avahi-daemon` — to drop the overlap.
 
 ---
 
@@ -806,12 +850,20 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
   HandleLidSwitchDocked=ignore                        # external monitor connected → logind does nothing, Hyprland takes over
   ```
   Apply with: `sudo systemctl restart systemd-logind`
-- **Hyprland `keybindings.conf`** — disables internal display when lid is closed while docked:
-  ```ini
-  bindl = , switch:on:Lid Switch,  exec, hyprctl keyword monitor eDP-1,disable
-  bindl = , switch:off:Lid Switch, exec, hyprctl keyword monitor eDP-1,1920x1080,auto,1,bitdepth,8
+- **`/etc/systemd/sleep.conf.d/hibernate-delay.conf`** (drop-in) — `HibernateDelaySec=30min`: how long
+  `suspend-then-hibernate` stays suspended before hibernating. Kept short because this machine has
+  **no S3** (s2idle only), so suspend keeps draining the battery, and `battery-monitor` can't rescue a
+  suspended machine (its timer doesn't fire in s2idle). 30 min caps the drain while still allowing a
+  quick resume for short breaks.
+- **Hyprland `keybindings.lua`** — disables the internal panel when the lid closes while docked (config
+  migrated to the Lua API; runtime monitor changes go through `hyprctl eval 'hl.monitor(...)'`):
+  ```lua
+  hl.bind("switch:on:Lid Switch",  hl.dsp.exec_cmd("hyprctl eval 'hl.monitor({output=\"eDP-1\", disabled=true})'"), { locked = true })
+  hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("hyprctl eval 'hl.monitor({output=\"eDP-1\", mode=\"1920x1080\", position=\"auto\", scale=1, bitdepth=8})'"), { locked = true })
   ```
-  `switch:on` = lid closed, `switch:off` = lid opened. When undocked, logind suspends before display disable is visible; on resume, lid-open re-enables `eDP-1`.
+  `switch:on` = lid closed, `switch:off` = lid opened. When undocked, logind suspends before the display
+  disable is visible; on resume, lid-open re-enables `eDP-1`. `monitors/monitor-workspaces.sh` also
+  self-heals a black `eDP-1` if the lid-open event is swallowed across suspend/resume.
 
 #### Idle-based auto lock/sleep/hibernate
 - Handled by `hypridle` — see Phase 2 Screen Lock section for config details.
@@ -827,6 +879,10 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 3. Edit `/etc/systemd/logind.conf` — set lid switch handlers
 4. `sudo systemctl restart systemd-logind`
 5. `sudo mkinitcpio -P` (rebuilds UKI)
+6. Deploy the **root drop-ins** tracked under `systemd/etc/` — `logind.conf.d/lid.conf`,
+   `sleep.conf.d/hibernate-delay.conf`, `udev/rules.d/80-power-profiles.rules`. **`stow systemd` only
+   links into `$HOME`, so these are *not* deployed by stow** — copy them to `/etc` (Ansible `copy`, like
+   `logid.cfg`) and run `sudo udevadm control --reload-rules` after the udev rule.
 
 ---
 
@@ -870,9 +926,18 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-06-13 | swaync styled to match waybar palette | Consistent navy/orange theme across bar and notification center; reduced sizes (12px radius, 13px font) to feel less bloated |
 | 2026-06-13 | Hibernate via swap partition (`/dev/nvme0n1p3`); zswap disabled | zram (`/dev/zram0`) is compressed RAM-only — not usable for hibernate. Physical swap partition required. `zswap.enabled=0` in kernel cmdline prevents zswap from intercepting swap writes needed for hibernate. `resume=UUID=` in limine.conf + `resume` hook in mkinitcpio wires resume on boot. UUID is machine-specific — must be updated per device |
 | 2026-06-14 | `acpi_sleep=nobl` required for hibernate on Yoga Slim 7 14ARE05 | AMD/UEFI firmware randomizes memory map between boots causing `Hibernate inconsistent memory map detected` — `acpi_sleep=nobl` disables the memory map blacklist check and fixes resume. No S3 sleep available on this model (BIOS removed it); s2idle only |
-| 2026-06-20 | Lid close behavior via `/etc/systemd/logind.conf.d/lid.conf` + Hyprland `bindl` — suspend-then-hibernate when undocked, disable `eDP-1` when docked | logind handles sleep/hibernate (can't be done in Hyprland); Hyprland handles display disable when docked. `HandleLidSwitchDocked=ignore` keeps logind out of the way. `switch:off` re-enables `eDP-1` on lid open. |
+| 2026-06-20 | Lid close behavior via `/etc/systemd/logind.conf.d/lid.conf` + Hyprland lid binds (`hl.bind`) — suspend-then-hibernate when undocked, disable `eDP-1` when docked | logind handles sleep/hibernate (can't be done in Hyprland); Hyprland handles display disable when docked. `HandleLidSwitchDocked=ignore` keeps logind out of the way. `switch:off` re-enables `eDP-1` on lid open. |
 | 2026-06-17 | aerc email client — Gmail via IMAP with GPG-encrypted app password | Google blocks plain IMAP passwords; App Password required (2FA must be on). Password stored GPG-encrypted at `~/.config/aerc/gmail.gpg` — never plaintext on disk. GPG key: ed25519/cv25519, no passphrase. accounts.conf uses `source-cred-cmd`/`outgoing-cred-cmd` to decrypt at runtime. On new machine: generate GPG key, retrieve app password from Ansible Vault, re-encrypt |
 | 2026-06-27 | SwayOSD caps-lock suppression must live in `/etc/xdg/swayosd/backend.toml` (root), not the user stow config | `swayosd-libinput-backend` runs as a **system** (root) service, so it reads `/etc/xdg/swayosd/backend.toml` and ignores `~/.config/swayosd/backend.toml`. `ignore_caps_lock_key = true` had to be set in the root file (then restart the backend) to stop the caps-lock popup. Ansible must deploy this as a root-owned file like `logid.cfg`, not a stow dotfile |
 | 2026-08-03 | Work email (Axxes, VRT) in aerc uses OAuth2/XOAUTH2 via `mutt_oauth2.py`, not app passwords | Both are Microsoft 365 with basic auth disabled — only OAuth2 works. Reused the muttmua contrib script + Thunderbird's public `client_id` (`9e5f94bc-...`); token files GPG-encrypted per account at `~/.config/aerc/<acct>.token`. aerc scheme must be `imaps+xoauth2`/`smtp+xoauth2` (auth in URL, not an `auth=` key); SMTP 587 = STARTTLS so scheme is `smtp+`, not `smtps`. `GPG_TTY` must be exported or the token pipe can't decrypt. If a tenant blocks the public app, IT must register one with delegated IMAP.AccessAsUser.All/SMTP.Send/offline_access |
 | 2026-08-03 | aerc inline images: chafa **symbols** mode only; kitty/sixel graphics don't work in aerc | aerc renders filter output through its own text-cell UI, so terminal graphics-protocol escapes (kitty `\e_G…`, sixel `\eP…`) print as literal text ("string of letters"). Only `chafa -f symbols` (Unicode block art → plain SGR color cells) renders. Original `magick convert` was also broken (IM7 deprecation warning corrupts the piped bytes). `pacman -S chafa`. Filter currently left commented in `aerc.conf`; `kitty +kitten icat` remains an option for pixel-perfect images since it writes straight to the terminal, bypassing aerc's UI |
+| 2026-09-02 | Merged the two hypridle configs into one AC/battery-aware `hypridle.conf`; deleted `hypridle-battery.conf`, `start-hypridle.sh`, and the udev "restart hypridle on AC change" rule | hypridle timeouts are static, so battery actions are guarded inline with `grep -q 1 …/ACAD/online \|\| <action>` and AC actions run unguarded as the fallback. One file instead of two; no cross-context `runuser … systemctl --user` from udev (it hardcoded the username and can silently fail without `XDG_RUNTIME_DIR`), no restart race. `hypridle.service` now runs `hypridle -c` directly. A mid-idle unplug still fires at the AC threshold |
+| 2026-09-02 | `HibernateDelaySec` 2h → 30min | No S3 on this laptop (s2idle only) so suspend keeps draining, and `battery-monitor` can't fire while suspended. 30 min caps idle-suspend drain while still allowing a quick resume |
+| 2026-09-02 | udev power-profile rule calls `/usr/bin/python3 /usr/bin/powerprofilesctl` explicitly | `powerprofilesctl` is a Python script; `mise`'s shimmed `python3` on `PATH` lacks system `gi`, so a bare call throws `ModuleNotFoundError: No module named 'gi'`. Pinning the interpreter makes the rule immune to the dev-env Python; interactively prefer the Waybar D-Bus toggle |
+| 2026-09-10 | Use `power-profiles-daemon`, not TLP, for laptop power management | The Yoga Slim exposes firmware `low-power`, `balanced`, and `performance` platform profiles. For mixed AC/battery use with balanced responsiveness, the existing daemon and Waybar/udev integration are simpler and safer than TLP's static tuning. Removed `tlp` and `tlp-rdw`; retain `powertop` for manual diagnostics only. |
+| 2026-09-02 | Kept blank-before-lock idle ordering on purpose | Screen powers down at the shorter timeout and lock follows ~1 min later; the brief screen-off-but-unlocked window is accepted in exchange for the preferred behavior. Recorded so it isn't "fixed" later |
+| 2026-09-02 | Removed F5 SSL VPN (`f5fpc`) from the repo entirely | Proprietary corporate VPN doesn't belong in a personal recovery repo — it was undocumented, half-working (`--toggle` could only disconnect), and used version-specific Hyprland dispatchers. Deleted `waybar/scripts/f5fpc.sh`, the `custom/f5` waybar module, and its `#custom-f5` CSS. If needed on a work machine, keep it in a machine-local overlay, not here |
+| 2026-09-02 | Trimmed `tailscale.sh` to the two live paths (`--status`/`--toggle`); `custom/ts` poll interval 1s → 5s | Removed dead code: the walker-backed `--select-exit-node`/`--switch-tailnet`/`--menue` subcommands were never bound anywhere and `walker` isn't installed. Cuts the script ~154 → ~82 lines and drops the `walker` + `declare -F` reflection dependency. 1s polling spawned `tailscale`+`jq` subprocesses every second for no benefit |
+| 2026-09-02 | Corrected SSH host/key docs; logged `tailscale`/`tsui`/nsswitch gaps | SETUP_LOG listed a stale `~/.ssh/tailscale` key and a `tailscale` SSH host at `192.168.129.34`; that IP is actually host `guild` (key `~/.ssh/guild`). Fixed the key/host list to match `ssh/.ssh/config`. Added `tailscale` + `tsui` (manual `/usr/local/bin` Go binary) to the Networking table. (mDNS handling is covered accurately by the live-review entry below.) |
+| 2026-09-02 | Live network-stack review: untracked `20-*.network` files + double mDNS responder | Runtime stack = iwd (Wi-Fi auth) + systemd-networkd (IP/DHCP/metrics) + systemd-resolved (DNS); no NetworkManager. The three `/etc/systemd/network/20-*.network` files (DHCP, route metrics, `MulticastDNS=yes`) are custom, not package-owned, and not repo-tracked → clean-reinstall gap; should be captured into Ansible `files/`. Both `avahi-daemon` and `systemd-resolved` run mDNS responders on UDP 5353 at once; `nss-mdns` is redundant because resolved already answers `.local`. Pick one mDNS responder to remove the overlap |
 | 2026-09-15 | nwg-displays owns monitor geometry; monitor-workspaces watcher owns only dynamic workspace mapping and lid recovery | Two arrangement sources competed: nwg-displays saved changes correctly, then the watcher restored hard-coded profile coordinates. Loading generated `monitors.lua` and removing watcher arrangement code makes GUI layouts persistent. |
