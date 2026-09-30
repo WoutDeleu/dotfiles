@@ -14,6 +14,12 @@
 				}
 			],
 			"activeId": "1e3e986a-9c5a-4f5b-99a0-53b5519c0b9a"
-		}
+		},
+		"partitions": [
+			{
+				"name": "persist:teams-4-linux",
+				"zoomLevel": 0.25
+			}
+		]
 	}
 }

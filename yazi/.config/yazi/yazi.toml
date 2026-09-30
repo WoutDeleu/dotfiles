@@ -49,6 +49,9 @@ open = [
 	{ run = 'start "" %s1',    desc = "Open", for = "windows", orphan = true },
 	{ run = "termux-open %s1", desc = "Open", for = "android" },
 ]
+browser = [
+	{ run = "/opt/helium-browser-bin/helium-wrapper %s1", desc = "Open in Helium", for = "linux", orphan = true },
+]
 reveal = [
 	{ run = "xdg-open %d1",         desc = "Reveal", for = "linux" },
 	{ run = "open -R %s1",          desc = "Reveal", for = "macos" },
@@ -68,6 +71,8 @@ download = [
 rules = [
 	# Folder
 	{ url = "*/", use = [ "edit", "open", "reveal" ] },
+	# HTML
+	{ mime = "text/html", use = [ "browser", "reveal" ] },
 	# Text
 	{ mime = "text/*", use = [ "edit", "reveal" ] },
 	# Image

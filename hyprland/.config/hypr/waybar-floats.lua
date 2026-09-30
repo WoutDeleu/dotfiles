@@ -19,19 +19,19 @@ hl.window_rule({
 })
 hl.window_rule({
     match = {
-        class = "pulsemixer-float",
+        class = "wiremix-float",
     },
     float = true,
 })
 hl.window_rule({
     match = {
-        class = "pulsemixer-float",
+        class = "wiremix-float",
     },
     size = "700 400",
 })
 hl.window_rule({
     match = {
-        class = "pulsemixer-float",
+        class = "wiremix-float",
     },
     center = true,
 })

@@ -11,6 +11,9 @@ fi
 ### Oh-My-Zsh
 export ZSH="$HOME/.oh-my-zsh"
 
+### Rust
+export PATH=/home/woutd/.cargo/bin:$PATH
+
 # Theme is provided by Powerlevel10k (sourced manually below), so leave OMZ's
 # theme empty to avoid loading robbyrussell on top of it.
 ZSH_THEME=""

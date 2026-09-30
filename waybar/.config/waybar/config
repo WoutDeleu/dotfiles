@@ -198,7 +198,7 @@
         "return-type": "json",
         "interval": 2,
         "tooltip": true,
-        "on-click": "~/.config/waybar/scripts/toggle-float.sh pulsemixer-float kitty --class pulsemixer-float pulsemixer",
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh wiremix-float kitty --class wiremix-float wiremix",
         "on-click-right": "swayosd-client --output-volume mute-toggle",
         "on-scroll-up": "swayosd-client --output-volume raise && pkill -SIGRTMIN+3 waybar",
         "on-scroll-down": "swayosd-client --output-volume lower && pkill -SIGRTMIN+3 waybar",
@@ -217,7 +217,7 @@
         "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
         "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
         "scroll-step": 5,
-        "on-click": "~/.config/waybar/scripts/toggle-float.sh pulsemixer-float kitty --class pulsemixer-float pulsemixer"
+        "on-click": "~/.config/waybar/scripts/toggle-float.sh wiremix-float kitty --class wiremix-float wiremix"
     },
     "battery": {
         "format": "<span size='large'>{icon}</span>",
@@ -247,7 +247,7 @@
 
     "custom/ts": {
         "exec": "~/.config/waybar/scripts/tailscale.sh --status 'ipv4'",
-        "interval": 1,
+        "interval": 5,
         "format": "{icon}",
         "format-icons": {
             "connected": " 󰛳 󰕥 ",

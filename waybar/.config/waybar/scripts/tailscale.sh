@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# MENU_CMD="wofi --dmenu --prompt 'Menue'" # Change to rofi/fuzzel/dmenu as needed
-MENU_CMD="walker --dmenu 'Menue'" # Change to rofi/fuzzel/dmenu as needed
-
 tailscale_status() {
   tailscale status --json | jq -e '.BackendState == "Running"' >/dev/null
 }
@@ -14,66 +11,6 @@ toggle_status() {
     tailscale up
   fi
   sleep 3
-}
-
-select_exit_node() {
-  if ! tailscale_status; then
-    notify-send -a "Tailscale" "VPN is not running"
-    return 1
-  fi
-
-  # Get available exit nodes (devices that advertise as exit nodes)
-  local nodes
-  nodes=$(tailscale status --json | jq -r '
-        .Peer[] | select(.ExitNodeOption == true) |
-        .DNSName')
-
-  # Add option to disable exit node
-  nodes="None (disable exit node)"$'\n'"$nodes"
-
-  # Show menu and get selection
-  local selected
-  selected=$(echo "$nodes" | $MENU_CMD)
-
-  [ -z "$selected" ] && return 0 # User cancelled
-
-  if [[ "$selected" == "None"* ]]; then
-    tailscale set --exit-node=
-    notify-send -a "Tailscale" "Exit node disabled"
-  else
-    tailscale set --exit-node="$selected"
-    notify-send -a "Tailscale" "Exit node set to: $selected"
-  fi
-}
-
-switch_tailnet() {
-  local tailnets
-  local active
-  tailnets=$(tailscale switch --list --json | jq -r '
-    .[].tailnet')
-  active=$(tailscale switch --list --json | jq -r '
-    .[] | select(.selected == true) | .tailnet')
-
-  tailnets="keep $active (active)"$'\n'"$tailnets"
-
-  local selected
-  selected=$(echo "$tailnets" | $MENU_CMD)
-
-  [ -z "$selected" ] && return 0 # User cancelled
-
-  if [[ "$selected" == "keep"* ]]; then
-    notify-send -a "Tailscale" "keep Tailnet: $active"
-  else
-    tailscale switch $selected
-    notify-send -a "Tailscale" "switch to Tailnet: $selected"
-  fi
-}
-
-menue() {
-  local selected
-  selected=$(declare -F | sed 's/declare -f //' | sed '/menue/d' | sed '/tailscale_status/d' | $MENU_CMD)
-  echo $selected
-  $selected
 }
 
 case $1 in
@@ -141,14 +78,5 @@ case $1 in
   ;;
 --toggle)
   toggle_status
-  ;;
---select-exit-node)
-  select_exit_node
-  ;;
---switch-tailnet)
-  switch_tailnet
-  ;;
---menue)
-  menue
   ;;
 esac
