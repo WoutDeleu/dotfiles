@@ -62,6 +62,9 @@ export VISUAL=nvim
 # CTRL-R history search, CTRL-T file picker, ALT-C cd into dir.
 command -v fzf >/dev/null && source <(fzf --zsh)
 
+### Git helpers (git-prune-gone)
+src "$HOME/.config/zsh/git.zsh"
+
 ### Claude Code
 src "$HOME/.config/zsh/claude-code.zsh"
 
