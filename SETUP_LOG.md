@@ -808,6 +808,18 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
   like `logid.cfg`) and deploy on setup.
 - **Tailscale:** after install, enable the daemon and authenticate —
   `sudo systemctl enable --now tailscaled`, then `tailscale up`. Not yet automated in Ansible.
+- **DNS recovery (2026-10-05, manual workaround):** F5 left corporate DNS and a catch-all
+  domain in `/etc/systemd/resolved.conf`, plus a regular VPN-written `/etc/resolv.conf`.
+  Public DNS worked directly through the Wi-Fi router, but normal resolution depended on
+  connecting F5. User restored resolution without F5 by commenting out the corporate
+  `DNS=`/`Domains=` lines and setting `DNS=1.1.1.1 9.9.9.9` under `[Resolve]`.
+  `/etc/resolv.conf` is now a regular file containing `nameserver 1.1.1.1` and
+  `nameserver 9.9.9.9` (resolved reports `foreign`, not the September stub symlink).
+  Exact recovery commands are unknown; public lookup succeeded with F5 disconnected.
+  The repo's `systemd/etc/systemd/resolved.conf.d/10-no-vpn-global-dns.conf` is still
+  not installed. **TODO:** establish persistent resolver ownership and verify an F5
+  connect/disconnect cycle; direct public DNS in `resolv.conf` bypasses resolved's
+  split-DNS routing for applications using that file.
 - **Waybar `custom/ts`:** script `waybar/scripts/tailscale.sh` shows connection state
   (`--status`); left-click opens `tsui`, right-click toggles `tailscale up`/`down` (`--toggle`).
   Requires both `tailscale` and `tsui` on `PATH`.
@@ -941,3 +953,4 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-09-02 | Corrected SSH host/key docs; logged `tailscale`/`tsui`/nsswitch gaps | SETUP_LOG listed a stale `~/.ssh/tailscale` key and a `tailscale` SSH host at `192.168.129.34`; that IP is actually host `guild` (key `~/.ssh/guild`). Fixed the key/host list to match `ssh/.ssh/config`. Added `tailscale` + `tsui` (manual `/usr/local/bin` Go binary) to the Networking table. (mDNS handling is covered accurately by the live-review entry below.) |
 | 2026-09-02 | Live network-stack review: untracked `20-*.network` files + double mDNS responder | Runtime stack = iwd (Wi-Fi auth) + systemd-networkd (IP/DHCP/metrics) + systemd-resolved (DNS); no NetworkManager. The three `/etc/systemd/network/20-*.network` files (DHCP, route metrics, `MulticastDNS=yes`) are custom, not package-owned, and not repo-tracked → clean-reinstall gap; should be captured into Ansible `files/`. Both `avahi-daemon` and `systemd-resolved` run mDNS responders on UDP 5353 at once; `nss-mdns` is redundant because resolved already answers `.local`. Pick one mDNS responder to remove the overlap |
 | 2026-09-15 | nwg-displays owns monitor geometry; monitor-workspaces watcher owns only dynamic workspace mapping and lid recovery | Two arrangement sources competed: nwg-displays saved changes correctly, then the watcher restored hard-coded profile coordinates. Loading generated `monitors.lua` and removing watcher arrangement code makes GUI layouts persistent. |
+| 2026-10-05 | Temporary public DNS workaround after F5 DNS override | Manual configuration uses Cloudflare (`1.1.1.1`) and Quad9 (`9.9.9.9`) in both resolved.conf and a regular resolv.conf; public DNS works without F5, but persistence across VPN cycles and corporate split-DNS remain unverified. |
