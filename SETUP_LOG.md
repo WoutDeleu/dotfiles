@@ -397,6 +397,14 @@ Entries are removed once they have been automated into Ansible or committed as d
 | docker | Container runtime (daemon + CLI) | manual — `pacman -S docker`; see Docker |
 | docker-compose | Multi-container orchestration (`docker compose`) | manual — `pacman -S docker-compose` |
 | lazydocker | Terminal UI for Docker/compose | manual — `pacman -S lazydocker`, no custom config (defaults) |
+| opencode | Open source coding agent; required development tool | required — `pacman -S opencode` (official repository; installed) |
+
+### OpenCode
+- **Install:** `pacman -S opencode` (official Arch repository); required on new setups.
+- **Config:** `opencode/.config/opencode/opencode.json` (provider-agnostic; no model or credentials) and
+  `opencode/.config/opencode/tui.json` (`system` theme inherits the terminal background, including transparency).
+- **Deploy:** run `stow opencode` from the repository root.
+- **Ansible steps:** (1) install `opencode` with `pacman`, (2) stow `opencode/`.
 
 ### Docker
 - **Install:** `pacman -S docker docker-compose lazydocker` (all official repos).
