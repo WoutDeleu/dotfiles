@@ -244,7 +244,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 
   - Blank-before-lock ordering is **intentional** (screen powers down first, lock follows).
   - `before_sleep_cmd = loginctl lock-session` — always locks before sleep/hibernate.
-  - `after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms("on")'` — wakes the panel on resume.
+  - `after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms({action = "on"})'` — wakes the panel on resume (table form sets absolute state; bare string toggles).
 - **hyprlock config** (`hyprland/.config/hypr/hyprlock.conf`): blurred background, centered password field.
 - **Manual lock:** `loginctl lock-session` (or a bind in `keybindings.lua`).
 - **Ansible steps:** (1) `pacman -S hyprlock hypridle`, (2) stow `hyprland/` + `systemd/`,
@@ -870,11 +870,12 @@ Full PipeWire stack installed — replaces PulseAudio entirely.
 - **Hyprland `keybindings.lua`** — disables the internal panel when the lid closes while docked (config
   migrated to the Lua API; runtime monitor changes go through `hyprctl eval 'hl.monitor(...)'`):
   ```lua
-  hl.bind("switch:on:Lid Switch",  hl.dsp.exec_cmd("hyprctl eval 'hl.monitor({output=\"eDP-1\", disabled=true})'"), { locked = true })
+  hl.bind("switch:on:Lid Switch",  hl.dsp.exec_cmd("~/.config/hypr/monitors/monitor-workspaces.sh lid-close"), { locked = true })
   hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("hyprctl eval 'hl.monitor({output=\"eDP-1\", mode=\"1920x1080\", position=\"auto\", scale=1, bitdepth=8})'"), { locked = true })
   ```
-  `switch:on` = lid closed, `switch:off` = lid opened. When undocked, logind suspends before the display
-  disable is visible; on resume, lid-open re-enables `eDP-1`. `monitors/monitor-workspaces.sh` also
+  `switch:on` = lid closed, `switch:off` = lid opened. `lid-close` only disables `eDP-1` when another
+  monitor is enabled — disabling the last output makes Hyprland create `FALLBACK`, hyprlock locks that,
+  and the red "lockscreen died" screen flashes on resume. `monitors/monitor-workspaces.sh` also
   self-heals a black `eDP-1` if the lid-open event is swallowed across suspend/resume.
 
 #### Idle-based auto lock/sleep/hibernate

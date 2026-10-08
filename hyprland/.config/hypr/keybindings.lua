@@ -117,7 +117,8 @@ hl.window_rule({
 -- logind (lid.conf) handles suspend-then-hibernate when undocked.
 
 -- When docked (HandleLidSwitchDocked=ignore), Hyprland disables/re-enables eDP-1.
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("hyprctl eval 'hl.monitor({output=\"eDP-1\", disabled=true})'"), {
+-- lid-close only disables eDP-1 if another monitor is active (keeps hyprlock's surface when undocked).
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("~/.config/hypr/monitors/monitor-workspaces.sh lid-close"), {
     locked = true,
 })
 hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("hyprctl eval 'hl.monitor({output=\"eDP-1\", mode=\"1920x1080\", position=\"auto\", scale=1, bitdepth=8})'"), {

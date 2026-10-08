@@ -50,6 +50,24 @@ lid_state() {
   printf 'open'
 }
 
+# Number of enabled monitors other than the laptop panel.
+other_enabled_count() {
+  jq --arg n "$1" '[.[] | select(.name != $n and .disabled != true)] | length' <<<"$MONS"
+}
+
+# Lid closed: disable the laptop panel only when docked. Undocked, logind
+# suspends anyway; disabling the last output makes Hyprland swap in FALLBACK,
+# so hyprlock loses its eDP-1 surface and "lockscreen died" flashes on resume.
+lid_close() {
+  MONS=$(hyprctl monitors all -j) || return 1
+  local laptop
+  laptop=$(laptop_name)
+  [ -n "$laptop" ] || return 0
+  if [ "$(other_enabled_count "$laptop")" -gt 0 ]; then
+    hyprctl eval "hl.monitor({output=\"$laptop\", disabled=true})" >/dev/null 2>&1
+  fi
+}
+
 apply() {
   # `monitors all` (not just enabled ones) so a panel that got disabled by a
   # lid-close/suspend stays visible here and can be recovered.
@@ -61,8 +79,15 @@ apply() {
     local laptop
     laptop=$(laptop_name)
     if [ -n "$laptop" ]; then
-      hyprctl eval "hl.monitor({output=\"$laptop\", disabled=true})" >/dev/null 2>&1
-      MONS=$(jq --arg n "$laptop" 'map(select(.name != $n))' <<<"$MONS")
+      if [ "$(other_enabled_count "$laptop")" -gt 0 ]; then
+        hyprctl eval "hl.monitor({output=\"$laptop\", disabled=true})" >/dev/null 2>&1
+        MONS=$(jq --arg n "$laptop" 'map(select(.name != $n))' <<<"$MONS")
+      elif [ "$(jq -r --arg n "$laptop" '.[] | select(.name==$n) | .disabled' <<<"$MONS")" = "true" ]; then
+        # Undocked with the panel off (e.g. external unplugged while shut):
+        # bring it back so there is a real output to lock before suspend.
+        hyprctl reload >/dev/null 2>&1
+        MONS=$(hyprctl monitors all -j) || return 1
+      fi
     fi
   else
     local laptop
@@ -126,5 +151,6 @@ watch() {
 case "${1:-apply}" in
   apply) apply ;;
   watch) watch ;;
-  *) echo "usage: ${0##*/} {apply|watch}" >&2; exit 1 ;;
+  lid-close) lid_close ;;
+  *) echo "usage: ${0##*/} {apply|watch|lid-close}" >&2; exit 1 ;;
 esac
