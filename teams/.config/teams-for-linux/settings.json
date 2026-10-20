@@ -18,7 +18,7 @@
 		"partitions": [
 			{
 				"name": "persist:teams-4-linux",
-				"zoomLevel": 0.25
+				"zoomLevel": 0.5
 			}
 		]
 	}
