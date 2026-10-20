@@ -41,6 +41,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | power-profiles-daemon | Firmware-integrated power-profile daemon (`low-power`, `balanced`, `performance`); see Power Profile Management | manual — `pacman -S power-profiles-daemon` |
 | powertop | Power-consumption diagnostics and tuning utility; run interactively, do not apply its auto-tune settings persistently | manual — `pacman -S powertop` |
 | vlc | Media player with broad codec support | manual — `pacman -S vlc` |
+| thunderbird | Graphical email client; launched on Hyprland workspace 6 | manual — `sudo pacman -S thunderbird` |
 | onlyoffice-bin | Office suite (Writer/Calc/Impress) | manual — `pacman -S onlyoffice-bin` |
 | zathura | Minimal PDF/document viewer | manual — `pacman -S zathura zathura-pdf-mupdf` |
 | wlsunset | Blue light filter — time-based warm/cool color temperature; schedule 21:30–06:30; systemd user service in `systemd/` stow package | manual — `pacman -S wlsunset` |
@@ -62,6 +63,7 @@ Entries are removed once they have been automated into Ansible or committed as d
 | ycal | yay | Google Calendar module for Waybar — client secret at `~/.config/waybar-ycal/client_secret.json` (gitignored, via stow), OAuth not yet configured | manual |
 | swayosd-git | yay | Wayland OSD for volume/brightness — shows overlay bar on key/scroll change | manual — `yay -S swayosd-git` |
 | spotify-player | yay | Terminal Spotify client with TUI | manual — `yay -S spotify-player` |
+| fastspotify | yay | Graphical Spotify client; replaces spotify-player at startup on Hyprland workspace 8, launched directly without a terminal | manual — `yay -S fastspotify` |
 
 ### Services Enabled
 | Service | Command | Status |
@@ -954,3 +956,4 @@ creds, SSH keys, git identity/auth, with destinations and modes). Add new secret
 | 2026-09-02 | Live network-stack review: untracked `20-*.network` files + double mDNS responder | Runtime stack = iwd (Wi-Fi auth) + systemd-networkd (IP/DHCP/metrics) + systemd-resolved (DNS); no NetworkManager. The three `/etc/systemd/network/20-*.network` files (DHCP, route metrics, `MulticastDNS=yes`) are custom, not package-owned, and not repo-tracked → clean-reinstall gap; should be captured into Ansible `files/`. Both `avahi-daemon` and `systemd-resolved` run mDNS responders on UDP 5353 at once; `nss-mdns` is redundant because resolved already answers `.local`. Pick one mDNS responder to remove the overlap |
 | 2026-09-15 | nwg-displays owns monitor geometry; monitor-workspaces watcher owns only dynamic workspace mapping and lid recovery | Two arrangement sources competed: nwg-displays saved changes correctly, then the watcher restored hard-coded profile coordinates. Loading generated `monitors.lua` and removing watcher arrangement code makes GUI layouts persistent. |
 | 2026-10-05 | Temporary public DNS workaround after F5 DNS override | Manual configuration uses Cloudflare (`1.1.1.1`) and Quad9 (`9.9.9.9`) in both resolved.conf and a regular resolv.conf; public DNS works without F5, but persistence across VPN cycles and corporate split-DNS remain unverified. |
+| 2026-10-20 | Start FastSpotify directly on workspace 8 and Thunderbird on workspace 6 | Use graphical clients at startup instead of the Spotify terminal client; commands are tracked in `hyprland/.config/hypr/scripts/startup.sh`. No additional configuration or services were required. |
