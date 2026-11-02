@@ -241,7 +241,7 @@
         "interval": "once",
         "signal": 1,
         "return-type": "json",
-        "on-click": "btop-float kitty --class btop-float btop",
+        "on-click": "swaync-client -t",
         "on-click-right": "swaync-client -d"
     },
 
