@@ -23,7 +23,7 @@ hyprctl dispatch 'hl.dsp.exec_cmd("[workspace 1 silent] kitty")'
 hyprctl dispatch 'hl.dsp.exec_cmd("[workspace 5 silent] zapzap")'
 hyprctl dispatch 'hl.dsp.exec_cmd("[workspace 6 silent] thunderbird")'
 hyprctl dispatch 'hl.dsp.exec_cmd("[workspace 7 silent] /opt/helium-browser-bin/helium-wrapper --profile-directory=Default --app-id=kjbdgfilnfhdoflbpgamdcdgpehopbep")'
-hyprctl dispatch 'hl.dsp.exec_cmd("[workspace 8 silent] fastspotify")'
+hyprctl dispatch 'hl.dsp.exec_cmd("[workspace 8 silent] spotifast")'
 
 sleep 0.3
 hyprctl dispatch 'hl.dsp.focus({workspace=1})'
