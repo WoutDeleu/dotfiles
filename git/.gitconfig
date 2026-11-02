@@ -1,3 +1,5 @@
+[core]
+        sshCommand = ssh -i ~/.ssh/github -o IdentitiesOnly=yes
 [user]
 	name = WoutDeleu
 	email = WoutDeleu@users.noreply.github.com
@@ -16,3 +18,6 @@
 	format = ssh
 [commit]
 	gpgsign = true
+
+[includeIf "gitdir:~/dev/vrt/"]
+	path = ~/dev/vrt/git.inc
